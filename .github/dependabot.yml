@@ -9,6 +9,11 @@ updates:
     groups:
       npm:
         patterns: ['*']
+    ignore:
+      # typescript-eslint (via eslint-config-next) does not support TypeScript 7
+      # yet, and lint fails outright on it. Drop this once it does.
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: 'github-actions'
     directory: '/'
