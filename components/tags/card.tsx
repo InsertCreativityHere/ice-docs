@@ -17,7 +17,13 @@ type CardProps = {
 // arrow that arrives on hover, not blue: a grid of blue headings makes the whole
 // page look like a link list and drains the meaning out of the inline links in
 // the prose around it.
-export const Card = ({ title, description, href, level = 3, unresolved }: CardProps) => {
+export const Card = ({
+  title,
+  description,
+  href,
+  level = 3,
+  unresolved
+}: CardProps) => {
   return (
     <AppLink
       href={href}
@@ -36,7 +42,9 @@ export const Card = ({ title, description, href, level = 3, unresolved }: CardPr
           className="size-4 shrink-0 -translate-x-1 opacity-0 transition duration-150 group-hover:translate-x-0 group-hover:opacity-100"
         />
       </div>
-      <div className="text-ink-secondary my-0 mt-1.5 text-sm leading-relaxed">{description}</div>
+      <div className="text-ink-secondary my-0 mt-1.5 text-sm leading-relaxed">
+        {description}
+      </div>
     </AppLink>
   );
 };

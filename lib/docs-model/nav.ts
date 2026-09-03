@@ -76,35 +76,49 @@ export const GROUP_OVERVIEW_TITLE = 'Overview';
  * node is kept (so the manual's full shape shows), with a link only when the
  * page exists for this language, and `active` set on the current page.
  */
-export function buildSideNav(nodes: NavNode[], opts: BuildSideNavOptions): SideNavNode[] {
-  return (nodes ?? [])
-    // A language-specific node appears only in the ToC for its language.
-    .filter((node) => !node.language || node.language === opts.language)
-    .map((node) => {
-      const available = node.page ? opts.isAvailable(node.page) : false;
-      const href = available ? pageHref(opts.version, opts.language, node.page!) : undefined;
-      const active = !!node.page && node.page === opts.currentSlug;
-      const items = buildSideNav(node.items ?? [], opts);
+export function buildSideNav(
+  nodes: NavNode[],
+  opts: BuildSideNavOptions
+): SideNavNode[] {
+  return (
+    (nodes ?? [])
+      // A language-specific node appears only in the ToC for its language.
+      .filter((node) => !node.language || node.language === opts.language)
+      .map((node) => {
+        const available = node.page ? opts.isAvailable(node.page) : false;
+        const href = available
+          ? pageHref(opts.version, opts.language, node.page!)
+          : undefined;
+        const active = !!node.page && node.page === opts.currentSlug;
+        const items = buildSideNav(node.items ?? [], opts);
 
-      // A group that also has a page of its own would have to answer two
-      // gestures with one row: navigate, and open. Splitting them means the
-      // whole row — title included — becomes the toggle, and the page moves to
-      // an "Overview" child where it is still one click away. Clicking a group
-      // title is how readers expect to open it, and how Stripe's sidebar reads.
-      if (items.length > 0 && href) {
-        return {
-          title: node.title,
-          active: false,
-          items: [{ title: GROUP_OVERVIEW_TITLE, href, active, items: [] }, ...items]
-        };
-      }
+        // A group that also has a page of its own would have to answer two
+        // gestures with one row: navigate, and open. Splitting them means the
+        // whole row — title included — becomes the toggle, and the page moves to
+        // an "Overview" child where it is still one click away. Clicking a group
+        // title is how readers expect to open it, and how Stripe's sidebar reads.
+        if (items.length > 0 && href) {
+          return {
+            title: node.title,
+            active: false,
+            items: [
+              { title: GROUP_OVERVIEW_TITLE, href, active, items: [] },
+              ...items
+            ]
+          };
+        }
 
-      return { title: node.title, href, active, items };
-    });
+        return { title: node.title, href, active, items };
+      })
+  );
 }
 
 /** The canonical URL of a page. */
-export function pageHref(version: string, language: string, slug: string): string {
+export function pageHref(
+  version: string,
+  language: string,
+  slug: string
+): string {
   return `/ice/${version}/${language}/${slug}`;
 }
 
@@ -128,7 +142,10 @@ export function sideNavKey(path: readonly string[]): string {
  * opens on its own, so the current page is always visible. Keys are built the
  * way the sidebar builds them (see `sideNavKey`), so the two agree.
  */
-export function activeTrailKeys(nodes: SideNavNode[], path: readonly string[] = []): string[] {
+export function activeTrailKeys(
+  nodes: SideNavNode[],
+  path: readonly string[] = []
+): string[] {
   const out: string[] = [];
   for (const node of nodes) {
     const nodePath = [...path, node.href ?? node.title];
@@ -187,8 +204,10 @@ export function counterpartSlug(
   const trail = trailTo(nodes, slug);
   const node = trail ? trail[trail.length - 1] : undefined;
   if (!trail || !node?.language || node.language === language) return undefined;
-  const siblings = trail.length > 1 ? trail[trail.length - 2].items ?? [] : nodes;
-  return siblings.find((s) => s.language === language && s.title === node.title)?.page;
+  const siblings =
+    trail.length > 1 ? (trail[trail.length - 2].items ?? []) : nodes;
+  return siblings.find((s) => s.language === language && s.title === node.title)
+    ?.page;
 }
 
 /** Every page a reader can reach from the navigation, in reading order. */
@@ -232,16 +251,24 @@ export function breadcrumbs(
   if (!trail) return [];
 
   const crumbs: Crumb[] = [
-    { title: MANUAL_TITLE, href: pageHref(opts.version, opts.language, landingSlug(nav)) },
+    {
+      title: MANUAL_TITLE,
+      href: pageHref(opts.version, opts.language, landingSlug(nav))
+    },
     ...trail.map((node) =>
       node.page
-        ? { title: node.title, href: pageHref(opts.version, opts.language, node.page) }
+        ? {
+            title: node.title,
+            href: pageHref(opts.version, opts.language, node.page)
+          }
         : { title: node.title }
     )
   ];
   const here = pageHref(opts.version, opts.language, slug);
   return crumbs.map((crumb, i) =>
-    crumb.href === here || i === crumbs.length - 1 ? { title: crumb.title } : crumb
+    crumb.href === here || i === crumbs.length - 1
+      ? { title: crumb.title }
+      : crumb
   );
 }
 
@@ -275,7 +302,10 @@ export function prevNext(
   if (i === -1) return {};
   const link = (node?: NavNode): PageLink | undefined =>
     node?.page
-      ? { title: node.title, href: pageHref(opts.version, opts.language, node.page) }
+      ? {
+          title: node.title,
+          href: pageHref(opts.version, opts.language, node.page)
+        }
       : undefined;
   return { prev: link(flat[i - 1]), next: link(flat[i + 1]) };
 }
@@ -328,7 +358,7 @@ export interface VersionSwitchInput {
 export function versionSwitchTarget(i: VersionSwitchInput): string {
   const language = i.targetLanguages.includes(i.currentLanguage)
     ? i.currentLanguage
-    : i.targetLanguages[0] ?? i.currentLanguage;
+    : (i.targetLanguages[0] ?? i.currentLanguage);
   const slug = i.pageExists(language, i.slug) ? i.slug : i.landing;
   return pageHref(i.targetVersion, language, slug);
 }

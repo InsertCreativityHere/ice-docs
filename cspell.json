@@ -1,9 +1,7 @@
 {
   "version": "0.2",
   "comment": "The spellcheck workflow scans every .md/.ts/.tsx/.js/.jsx in the repo; the vocabulary below covers the Ice identifiers and terms the manual uses.",
-  "ignorePaths": [
-    "node_modules/**"
-  ],
+  "ignorePaths": ["node_modules/**"],
   "words": [
     "abstractmethod",
     "adapterid",

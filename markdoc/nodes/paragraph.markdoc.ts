@@ -13,7 +13,9 @@ const paragraph = {
   transform(node: Node, config: Config) {
     const attributes = node.transformAttributes(config);
     const children = node.transformChildren(config);
-    const images = children.filter((child): child is Tag => Tag.isTag(child) && child.name === 'img');
+    const images = children.filter(
+      (child): child is Tag => Tag.isTag(child) && child.name === 'img'
+    );
     if (images.length > 0 && images.length === children.length) {
       for (const image of images) image.attributes.class = 'figure';
     }

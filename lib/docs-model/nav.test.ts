@@ -87,7 +87,10 @@ test('a group that has a page of its own becomes a toggle, with the page as Over
 });
 
 test("standing on a group's own page marks Overview, not the group row", () => {
-  const [, slice] = buildSideNav(SIDEBAR, { ...opts, currentSlug: 'the-slice-language' });
+  const [, slice] = buildSideNav(SIDEBAR, {
+    ...opts,
+    currentSlug: 'the-slice-language'
+  });
   assert.equal(slice.active, false);
   assert.equal(slice.items[0].active, true);
   // The group still opens on its own, because it holds the active page.
@@ -120,10 +123,17 @@ test('buildSideNav shows a language-specific node only for its language', () => 
     ['/ice/3.8/cpp/cpp-plug-in-api', '/ice/3.8/cpp/installing-a-plug-in']
   );
 
-  const [, , py] = buildSideNav(SIDEBAR, { ...opts, language: 'python', currentSlug: '' });
+  const [, , py] = buildSideNav(SIDEBAR, {
+    ...opts,
+    language: 'python',
+    currentSlug: ''
+  });
   assert.deepEqual(
     py.items.map((n) => n.href),
-    ['/ice/3.8/python/python-plug-in-api', '/ice/3.8/python/installing-a-plug-in']
+    [
+      '/ice/3.8/python/python-plug-in-api',
+      '/ice/3.8/python/installing-a-plug-in'
+    ]
   );
 });
 
@@ -148,7 +158,10 @@ test('trailTo returns every ancestor down to the page, or null', () => {
 test('counterpartSlug finds the same page written for another language', () => {
   // The C++ plug-in API page's counterpart for a Python reader is the Python
   // page beside it; a language switch should land there, not on the front page.
-  assert.equal(counterpartSlug(SIDEBAR, 'cpp-plug-in-api', 'python'), 'python-plug-in-api');
+  assert.equal(
+    counterpartSlug(SIDEBAR, 'cpp-plug-in-api', 'python'),
+    'python-plug-in-api'
+  );
   // No Java page sits beside it, and a shared page has no counterpart to find.
   assert.equal(counterpartSlug(SIDEBAR, 'cpp-plug-in-api', 'java'), undefined);
   assert.equal(counterpartSlug(SIDEBAR, 'cpp-plug-in-api', 'cpp'), undefined);
@@ -157,7 +170,10 @@ test('counterpartSlug finds the same page written for another language', () => {
 });
 
 test('breadcrumbs trace manual -> chapter -> group -> page, and the page is not a link', () => {
-  const crumbs = breadcrumbs(NAV, 'enumerations', { version: '3.8', language: 'cpp' });
+  const crumbs = breadcrumbs(NAV, 'enumerations', {
+    version: '3.8',
+    language: 'cpp'
+  });
   assert.deepEqual(
     crumbs.map((c) => c.title),
     [MANUAL_TITLE, 'The Slice Language', 'User-Defined Types', 'Enumerations']
@@ -169,17 +185,26 @@ test('breadcrumbs trace manual -> chapter -> group -> page, and the page is not 
 });
 
 test('a group without a page of its own is a plain-text crumb', () => {
-  const crumbs = breadcrumbs(NAV, 'installing-a-plug-in', { version: '3.8', language: 'cpp' });
+  const crumbs = breadcrumbs(NAV, 'installing-a-plug-in', {
+    version: '3.8',
+    language: 'cpp'
+  });
   assert.deepEqual(crumbs[1], { title: 'Plugins' });
 });
 
 test("the manual's front page never links to itself from its own trail", () => {
-  const crumbs = breadcrumbs(NAV, 'get-started', { version: '3.8', language: 'cpp' });
+  const crumbs = breadcrumbs(NAV, 'get-started', {
+    version: '3.8',
+    language: 'cpp'
+  });
   assert.deepEqual(crumbs, [{ title: MANUAL_TITLE }, { title: 'Get Started' }]);
 });
 
 test('a page outside the tree gets no trail', () => {
-  assert.deepEqual(breadcrumbs(NAV, 'orphan', { version: '3.8', language: 'cpp' }), []);
+  assert.deepEqual(
+    breadcrumbs(NAV, 'orphan', { version: '3.8', language: 'cpp' }),
+    []
+  );
 });
 
 test('prevNext walks the whole manual in reading order, across chapters', () => {
@@ -203,7 +228,10 @@ test('prevNext skips pages that do not exist in the current language', () => {
 });
 
 test('prevNext never crosses into another language', () => {
-  const { next } = prevNext(SIDEBAR, 'sequences', { ...opts, language: 'python' });
+  const { next } = prevNext(SIDEBAR, 'sequences', {
+    ...opts,
+    language: 'python'
+  });
   assert.equal(next?.href, '/ice/3.8/python/python-plug-in-api');
 });
 
@@ -230,7 +258,10 @@ test('languageLabel maps slugs to display names, falling back to the slug', () =
 
 test('landingSlug prefers explicit landing, else the first page, else get-started', () => {
   assert.equal(landingSlug(NAV), 'get-started');
-  assert.equal(landingSlug({ sidebar: SIDEBAR.slice(1) }), 'the-slice-language');
+  assert.equal(
+    landingSlug({ sidebar: SIDEBAR.slice(1) }),
+    'the-slice-language'
+  );
   assert.equal(landingSlug({ sidebar: [] }), 'get-started');
 });
 

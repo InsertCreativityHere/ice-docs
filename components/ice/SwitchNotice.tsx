@@ -31,7 +31,10 @@ export function SwitchNotice() {
     const from = params.get('from');
     // Only ever link back to a page on this site.
     if (!from || !from.startsWith('/ice/')) return null;
-    return { href: from, label: params.get('fromLabel') ?? 'the page you were reading' };
+    return {
+      href: from,
+      label: params.get('fromLabel') ?? 'the page you were reading'
+    };
   });
 
   // Drop the parameters so a refresh, or a link the reader copies, is clean.
@@ -50,7 +53,10 @@ export function SwitchNotice() {
       <div className="mx-auto flex max-w-400 items-center justify-between gap-4">
         <span>
           That page is not available here, so this is the closest one.{' '}
-          <Link href={notice.href} className="font-semibold underline underline-offset-4">
+          <Link
+            href={notice.href}
+            className="font-semibold underline underline-offset-4"
+          >
             Back to {notice.label}
           </Link>
         </span>

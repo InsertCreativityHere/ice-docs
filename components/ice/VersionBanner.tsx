@@ -20,7 +20,10 @@ export function VersionBanner({
         You are reading the documentation for Ice {version}
         {status === 'archived' ? ', which is no longer supported' : ''}.{' '}
         {latestUrl && (
-          <a href={latestUrl} className="font-semibold underline underline-offset-4">
+          <a
+            href={latestUrl}
+            className="font-semibold underline underline-offset-4"
+          >
             Go to the latest release
           </a>
         )}

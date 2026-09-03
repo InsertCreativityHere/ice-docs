@@ -25,7 +25,9 @@ const LEADER_ALT = COMMENT_LEADERS.map((l) =>
 
 // A marker line: optional indent, a comment leader, optional space, then
 // `<name>` (open) or `</name>` (close), and nothing else.
-const MARKER_RE = new RegExp(`^\\s*(?:${LEADER_ALT})\\s*<(/?)([A-Za-z0-9._-]+)>\\s*$`);
+const MARKER_RE = new RegExp(
+  `^\\s*(?:${LEADER_ALT})\\s*<(/?)([A-Za-z0-9._-]+)>\\s*$`
+);
 
 export interface Marker {
   name: string;
@@ -109,14 +111,16 @@ function* iterTags(s: string): Generator<Tag> {
       name: m[2],
       attrs: m[3] ?? '',
       index: m.index,
-      length: m[0].length,
+      length: m[0].length
     };
   }
 }
 
 /** Read a `key="value"` / `key='value'` / `key=value` attribute, or null. */
 export function getAttr(attrs: string, key: string): string | null {
-  const re = new RegExp(`\\b${key}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s/%]+))`);
+  const re = new RegExp(
+    `\\b${key}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s/%]+))`
+  );
   const m = re.exec(attrs);
   if (!m) return null;
   return m[1] ?? m[2] ?? m[3] ?? null;
@@ -148,9 +152,14 @@ export const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---[ \t]*\r?\n?/;
 export const splitLines = (text: string): string[] => text.split(/\r?\n/);
 
 /** Split a markdown document into its YAML frontmatter block and body. */
-export function splitFrontmatter(md: string): { frontmatter: string; body: string } {
+export function splitFrontmatter(md: string): {
+  frontmatter: string;
+  body: string;
+} {
   const m = FRONTMATTER_RE.exec(md);
-  return m ? { frontmatter: m[1], body: md.slice(m[0].length) } : { frontmatter: '', body: md };
+  return m
+    ? { frontmatter: m[1], body: md.slice(m[0].length) }
+    : { frontmatter: '', body: md };
 }
 
 /**
@@ -236,7 +245,8 @@ function fencedLines(lines: string[]): boolean[] {
  * legal end state — `npm run check:content` counts them and refuses to let the
  * number grow.
  */
-export type SlotState = 'content' | 'no-addition' | 'not-applicable' | 'unclassified';
+export type SlotState =
+  'content' | 'no-addition' | 'not-applicable' | 'unclassified';
 
 export const SLOT_STATES: readonly SlotState[] = [
   'content',
@@ -255,9 +265,16 @@ export interface LanguageSlot {
 }
 
 /** Extract the named `{% language-section %}` blocks from an overlay body. */
-export function parseLanguageSections(overlayBody: string): Map<string, LanguageSlot> {
+export function parseLanguageSections(
+  overlayBody: string
+): Map<string, LanguageSlot> {
   const out = new Map<string, LanguageSlot>();
-  let open: { name: string; end: number; state: string | null; note: string | null } | null = null;
+  let open: {
+    name: string;
+    end: number;
+    state: string | null;
+    note: string | null;
+  } | null = null;
 
   const add = (slot: LanguageSlot) => {
     if (out.has(slot.name)) {
@@ -271,7 +288,14 @@ export function parseLanguageSections(overlayBody: string): Map<string, Language
 
     if (t.close) {
       if (open === null) throw new Error('unmatched {% /language-section %}');
-      add(slotFrom(open.name, overlayBody.slice(open.end, t.index).trim(), open.state, open.note));
+      add(
+        slotFrom(
+          open.name,
+          overlayBody.slice(open.end, t.index).trim(),
+          open.state,
+          open.note
+        )
+      );
       open = null;
       continue;
     }
@@ -292,11 +316,13 @@ export function parseLanguageSections(overlayBody: string): Map<string, Language
       continue;
     }
 
-    if (open !== null) throw new Error(`nested language-section inside "${open.name}"`);
+    if (open !== null)
+      throw new Error(`nested language-section inside "${open.name}"`);
     open = { name, end: t.index + t.length, state, note };
   }
 
-  if (open !== null) throw new Error(`language-section "${open.name}" is not closed`);
+  if (open !== null)
+    throw new Error(`language-section "${open.name}" is not closed`);
   return out;
 }
 
@@ -313,7 +339,9 @@ function slotFrom(
       );
     }
     if (content) {
-      throw new Error(`language-section "${name}" declares state="${state}" but also has content`);
+      throw new Error(
+        `language-section "${name}" declares state="${state}" but also has content`
+      );
     }
     if (state === 'not-applicable' && !note) {
       throw new Error(
@@ -351,7 +379,9 @@ export function resolveLanguageSections(
   for (const t of iterTags(sharedBody)) {
     if (t.name !== 'language-section') continue;
     if (t.close || !isSelfClosing(sharedBody, t)) {
-      throw new Error('shared pages must use self-closing {% language-section name="…" /%} slots');
+      throw new Error(
+        'shared pages must use self-closing {% language-section name="…" /%} slots'
+      );
     }
     const name = getAttr(t.attrs, 'name');
     if (!name) throw new Error('language-section slot is missing a name');
@@ -369,7 +399,9 @@ export function resolveLanguageSections(
       // mappings have prose.
       result += `{% callout type="note" %}\n${slot.note}\n{% /callout %}`;
     } else if (slot.state === 'unclassified' && onUnclassified === 'error') {
-      throw new Error(`language-section "${name}" is blank and does not say why`);
+      throw new Error(
+        `language-section "${name}" is blank and does not say why`
+      );
     }
     // `no-addition` renders nothing: the shared prose already covers it.
 
@@ -382,7 +414,12 @@ export function resolveLanguageSections(
 export function declaredSlots(sharedBody: string): string[] {
   const out: string[] = [];
   for (const t of iterTags(sharedBody)) {
-    if (t.name !== 'language-section' || t.close || !isSelfClosing(sharedBody, t)) continue;
+    if (
+      t.name !== 'language-section' ||
+      t.close ||
+      !isSelfClosing(sharedBody, t)
+    )
+      continue;
     const name = getAttr(t.attrs, 'name');
     if (name) out.push(name);
   }
@@ -395,17 +432,22 @@ export function declaredSlots(sharedBody: string): string[] {
 
 const EXT_LANG: Record<string, string> = {
   cs: 'csharp',
-  cpp: 'cpp', cc: 'cpp', cxx: 'cpp', h: 'cpp', hpp: 'cpp',
+  cpp: 'cpp',
+  cc: 'cpp',
+  cxx: 'cpp',
+  h: 'cpp',
+  hpp: 'cpp',
   py: 'python',
   java: 'java',
-  js: 'javascript', mjs: 'javascript',
+  js: 'javascript',
+  mjs: 'javascript',
   ts: 'typescript',
   swift: 'swift',
   m: 'matlab',
   php: 'php',
   rb: 'ruby',
   slice: 'slice',
-  proto: 'protobuf',
+  proto: 'protobuf'
 };
 
 /** Infer a fenced-code language token from a file extension. */
@@ -416,14 +458,18 @@ export function langForFile(file: string): string {
 }
 
 /** Replace every `{% snippet file="…" name="…" [lang="…"] /%}` with a fenced code block. */
-export function inlineSnippets(md: string, readFile: (file: string) => string): string {
+export function inlineSnippets(
+  md: string,
+  readFile: (file: string) => string
+): string {
   let result = '';
   let last = 0;
   for (const t of iterTags(md)) {
     if (t.name !== 'snippet') continue;
     const file = getAttr(t.attrs, 'file');
     const name = getAttr(t.attrs, 'name');
-    if (!file || !name) throw new Error('snippet requires both file= and name=');
+    if (!file || !name)
+      throw new Error('snippet requires both file= and name=');
     const lang = getAttr(t.attrs, 'lang') || langForFile(file);
     const fragment = extractSnippet(readFile(file), name);
     result += md.slice(last, t.index);
@@ -458,7 +504,8 @@ export interface DocumentInput {
  */
 export function resolveDocument(input: DocumentInput): string {
   const { shared, overlay, readFile, onMissing, onUnclassified } = input;
-  if (!shared && !overlay) throw new Error('resolveDocument: no shared or overlay content');
+  if (!shared && !overlay)
+    throw new Error('resolveDocument: no shared or overlay content');
 
   if (!shared && overlay) {
     return inlineSnippets(splitFrontmatter(overlay).body, readFile);
@@ -468,6 +515,9 @@ export function resolveDocument(input: DocumentInput): string {
   const sections = overlay
     ? parseLanguageSections(splitFrontmatter(overlay).body)
     : new Map<string, LanguageSlot>();
-  const merged = resolveLanguageSections(sharedBody, sections, { onMissing, onUnclassified });
+  const merged = resolveLanguageSections(sharedBody, sections, {
+    onMissing,
+    onUnclassified
+  });
   return inlineSnippets(merged, readFile);
 }

@@ -104,7 +104,9 @@ export const CodeBlock = ({
                 return (
                   <div key={lineKey} {...rest}>
                     {lineNumbers && (
-                      <span className="mr-4 text-(--code-line-number)">{i + 1}</span>
+                      <span className="mr-4 text-(--code-line-number)">
+                        {i + 1}
+                      </span>
                     )}
                     {line.map((token, tokenIndex) => {
                       const { key: tokenKey, ...rest } = getTokenProps({

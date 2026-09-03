@@ -67,9 +67,15 @@ export const DocumentShell = ({
 
   return (
     <div className="flex shrink flex-row justify-center overflow-y-clip lg:justify-start">
-      <article data-page-shape={shape} className="mx-6 size-full max-w-232 md:mx-10 lg:mx-12">
+      <article
+        data-page-shape={shape}
+        className="mx-6 size-full max-w-232 md:mx-10 lg:mx-12"
+      >
         {breadcrumbs.length > 0 && (
-          <nav aria-label="Breadcrumb" className="text-ink-secondary mb-5 text-[13px]">
+          <nav
+            aria-label="Breadcrumb"
+            className="text-ink-secondary mb-5 text-[13px]"
+          >
             <ol className="flex flex-wrap items-center gap-1.5">
               {breadcrumbs.map((crumb, i) => (
                 <li key={i} className="flex items-center gap-1.5">
@@ -79,7 +85,10 @@ export const DocumentShell = ({
                     </span>
                   )}
                   {crumb.href ? (
-                    <Link href={crumb.href} className="hover:text-ink transition-colors">
+                    <Link
+                      href={crumb.href}
+                      className="hover:text-ink transition-colors"
+                    >
                       {crumb.title}
                     </Link>
                   ) : (
@@ -99,7 +108,9 @@ export const DocumentShell = ({
               </div>
             )}
             <h1>{title}</h1>
-            {description && <p className="text-ink-secondary mt-3 text-lg">{description}</p>}
+            {description && (
+              <p className="text-ink-secondary mt-3 text-lg">{description}</p>
+            )}
             {showReadingTime(readingTime) && (
               <p className="text-ink-muted mt-2 text-[13px]">{readingTime}</p>
             )}
@@ -120,7 +131,7 @@ export const DocumentShell = ({
                 is conspicuous on a short page where the card is most of it. */}
             {prev ? (
               <Link href={prev.href} className="group min-w-0 flex-1">
-                <div className="text-ink-muted text-[11px] font-semibold uppercase tracking-[0.04em]">
+                <div className="text-ink-muted text-[11px] font-semibold tracking-[0.04em] uppercase">
                   Previous
                 </div>
                 <div className="text-ink group-hover:text-link mt-0.5 truncate font-medium transition-colors">
@@ -132,8 +143,11 @@ export const DocumentShell = ({
               <div className="flex-1" />
             )}
             {next ? (
-              <Link href={next.href} className="group min-w-0 flex-1 text-right">
-                <div className="text-ink-muted text-[11px] font-semibold uppercase tracking-[0.04em]">
+              <Link
+                href={next.href}
+                className="group min-w-0 flex-1 text-right"
+              >
+                <div className="text-ink-muted text-[11px] font-semibold tracking-[0.04em] uppercase">
                   Next
                 </div>
                 <div className="text-ink group-hover:text-link mt-0.5 truncate font-medium transition-colors">

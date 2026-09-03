@@ -7,7 +7,12 @@ import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
 import { ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
-import { type SideNavNode, activeTrailKeys, containsActive, sideNavKey } from '@/lib/docs-model/nav';
+import {
+  type SideNavNode,
+  activeTrailKeys,
+  containsActive,
+  sideNavKey
+} from '@/lib/docs-model/nav';
 import { useMounted } from '@/context/state';
 
 // Whether the whole rail is folded away. A preference, so it lives in local
@@ -20,7 +25,8 @@ const COLLAPSED_KEY = 'ice-docs:sidebar-collapsed';
 // rebuilt on every navigation; without this, each click in it would hand back
 // a tree scrolled to the top with only the new page's branch open, and the
 // reader would lose their place in the very control they are using to move.
-const stateKey = (kind: 'open' | 'scroll', scope: string) => `ice-docs:sidebar-${kind}:${scope}`;
+const stateKey = (kind: 'open' | 'scroll', scope: string) =>
+  `ice-docs:sidebar-${kind}:${scope}`;
 
 function readState<T>(key: string, fallback: T): T {
   try {
@@ -52,12 +58,19 @@ function writeState(key: string, value: unknown) {
 // branch stays emphasised while folded, so "where am I" survives the fold. What
 // the reader opened stays open across navigations, so the tree does not
 // rearrange itself under the click that moved them.
-export function SideNav({ nodes, title }: { nodes: SideNavNode[]; title?: string }) {
+export function SideNav({
+  nodes,
+  title
+}: {
+  nodes: SideNavNode[];
+  title?: string;
+}) {
   // Read after mount, so the server and the first client render agree; the
   // width transition then carries the rail closed rather than snapping it.
   const mounted = useMounted();
   const remembered = useMemo(
-    () => (mounted ? window.localStorage.getItem(COLLAPSED_KEY) === '1' : false),
+    () =>
+      mounted ? window.localStorage.getItem(COLLAPSED_KEY) === '1' : false,
     [mounted]
   );
   const [override, setOverride] = useState<boolean | null>(null);
@@ -81,7 +94,9 @@ export function SideNav({ nodes, title }: { nodes: SideNavNode[]; title?: string
   // before this navigation. A click replaces the set outright.
   const initialOpen = useMemo(() => {
     const open = new Set(activeTrailKeys(nodes));
-    if (mounted) for (const key of readState<string[]>(stateKey('open', scope), [])) open.add(key);
+    if (mounted)
+      for (const key of readState<string[]>(stateKey('open', scope), []))
+        open.add(key);
     return open;
   }, [mounted, nodes, scope]);
   const [clicked, setClicked] = useState<Set<string> | null>(null);
@@ -126,7 +141,8 @@ export function SideNav({ nodes, title }: { nodes: SideNavNode[]; title?: string
     if (frame.current) return;
     frame.current = window.requestAnimationFrame(() => {
       frame.current = 0;
-      if (navRef.current) writeState(stateKey('scroll', scope), navRef.current.scrollTop);
+      if (navRef.current)
+        writeState(stateKey('scroll', scope), navRef.current.scrollTop);
     });
   };
 
@@ -145,7 +161,7 @@ export function SideNav({ nodes, title }: { nodes: SideNavNode[]; title?: string
     >
       <div className="mb-2 flex items-center gap-1">
         {!collapsed && title && (
-          <div className="text-ink-muted flex-1 truncate px-2 text-[11px] font-semibold uppercase tracking-[0.07em]">
+          <div className="text-ink-muted flex-1 truncate px-2 text-[11px] font-semibold tracking-[0.07em] uppercase">
             {title}
           </div>
         )}
@@ -154,8 +170,16 @@ export function SideNav({ nodes, title }: { nodes: SideNavNode[]; title?: string
           onClick={() => setCollapsed(!collapsed)}
           aria-expanded={!collapsed}
           aria-controls="manual-nav-tree"
-          aria-label={collapsed ? 'Expand table of contents' : 'Collapse table of contents'}
-          title={collapsed ? 'Expand table of contents' : 'Collapse table of contents'}
+          aria-label={
+            collapsed
+              ? 'Expand table of contents'
+              : 'Collapse table of contents'
+          }
+          title={
+            collapsed
+              ? 'Expand table of contents'
+              : 'Collapse table of contents'
+          }
           className="text-ink-muted hover:text-ink hover:bg-surface-subtle flex size-7 shrink-0 items-center justify-center rounded-md transition-colors"
         >
           {collapsed ? (
@@ -236,7 +260,10 @@ function Tree({ nodes, path, depth, open, toggle, animate }: TreeProps) {
           <li key={k}>
             {/* The chevron keeps its own column at every depth, so labels line
                 up on one edge instead of stepping in and out with the arrows. */}
-            <div className="flex items-start" style={{ paddingLeft: depth * 12 }}>
+            <div
+              className="flex items-start"
+              style={{ paddingLeft: depth * 12 }}
+            >
               {hasItems && !node.href ? (
                 // A group with no page of its own: the whole row toggles, so the
                 // target is the row rather than a 14px arrow.
@@ -298,7 +325,8 @@ function Tree({ nodes, path, depth, open, toggle, animate }: TreeProps) {
               <div
                 className={clsx(
                   'grid ease-out motion-reduce:transition-none',
-                  animate && 'transition-[grid-template-rows,visibility] duration-200',
+                  animate &&
+                    'transition-[grid-template-rows,visibility] duration-200',
                   isOpen ? 'grid-rows-[1fr]' : 'invisible grid-rows-[0fr]'
                 )}
               >

@@ -24,11 +24,16 @@ function contentVersions(root: string): string[] {
   if (!fs.existsSync(root)) return [];
   return fs
     .readdirSync(root)
-    .filter((n) => /^\d+\.\d+/.test(n) && fs.statSync(path.join(root, n)).isDirectory());
+    .filter(
+      (n) =>
+        /^\d+\.\d+/.test(n) && fs.statSync(path.join(root, n)).isDirectory()
+    );
 }
 
 function readYaml<T>(file: string): T | null {
-  return fs.existsSync(file) ? (yamlLoad(fs.readFileSync(file, 'utf8')) as T) : null;
+  return fs.existsSync(file)
+    ? (yamlLoad(fs.readFileSync(file, 'utf8')) as T)
+    : null;
 }
 
 // Mirrors landingSlug() in lib/docs-model/nav.ts: the explicit landing, else the
@@ -66,12 +71,16 @@ function buildRedirects(): RedirectRule[] {
       });
     }
 
-    const manifest = readYaml<{ redirects?: { from: string; to: string; permanent?: boolean }[] }>(
-      path.join(root, version, 'redirects.yaml')
-    );
+    const manifest = readYaml<{
+      redirects?: { from: string; to: string; permanent?: boolean }[];
+    }>(path.join(root, version, 'redirects.yaml'));
     for (const r of manifest?.redirects ?? []) {
       if (r.from && r.to) {
-        rules.push({ source: r.from, destination: r.to, permanent: r.permanent ?? false });
+        rules.push({
+          source: r.from,
+          destination: r.to,
+          permanent: r.permanent ?? false
+        });
       }
     }
   }

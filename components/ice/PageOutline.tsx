@@ -64,7 +64,7 @@ export function PageOutline({ headings }: { headings: OutlineHeading[] }) {
 
   return (
     <aside className="sticky top-20 ml-8 hidden h-[calc(100vh-6.5rem)] w-58 shrink-0 overflow-x-hidden overflow-y-auto overscroll-contain xl:block">
-      <div className="text-ink-muted mb-2 text-[11px] font-semibold uppercase tracking-[0.07em]">
+      <div className="text-ink-muted mb-2 text-[11px] font-semibold tracking-[0.07em] uppercase">
         On this page
       </div>
       <ul className="border-hairline border-l">

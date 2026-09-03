@@ -13,7 +13,11 @@ import assert from 'node:assert/strict';
 import { CODE_PALETTE, CONTRAST_FLOOR, iceCodeTheme } from './prism-theme.ts';
 
 function channels(hex: string): [number, number, number] {
-  return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [number, number, number];
+  return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [
+    number,
+    number,
+    number
+  ];
 }
 
 /** WCAG relative luminance. */
@@ -40,7 +44,13 @@ for (const mode of ['light', 'dark'] as const) {
   test(`${mode}: every token colour clears ${CONTRAST_FLOOR[mode]}:1 against the code surface`, () => {
     const palette = CODE_PALETTE[mode];
     const floor = CONTRAST_FLOOR[mode];
-    const chrome = new Set(['bg', 'page', 'headerBg', 'headerFg', 'lineNumber']);
+    const chrome = new Set([
+      'bg',
+      'page',
+      'headerBg',
+      'headerFg',
+      'lineNumber'
+    ]);
     for (const [role, colour] of Object.entries(palette)) {
       if (chrome.has(role)) continue;
       const ratio = contrast(colour, palette.bg);
@@ -55,8 +65,14 @@ for (const mode of ['light', 'dark'] as const) {
     const { headerBg, headerFg, lineNumber, bg } = CODE_PALETTE[mode];
     // The filename/language strip and the line numbers are text too — the old
     // theme drew both in white, which vanished on a light header.
-    assert.ok(contrast(headerFg, headerBg) >= 4.5, `header text is ${contrast(headerFg, headerBg).toFixed(2)}:1`);
-    assert.ok(contrast(lineNumber, bg) >= 4.5, `line numbers are ${contrast(lineNumber, bg).toFixed(2)}:1`);
+    assert.ok(
+      contrast(headerFg, headerBg) >= 4.5,
+      `header text is ${contrast(headerFg, headerBg).toFixed(2)}:1`
+    );
+    assert.ok(
+      contrast(lineNumber, bg) >= 4.5,
+      `line numbers are ${contrast(lineNumber, bg).toFixed(2)}:1`
+    );
   });
 
   test(`${mode}: the code surface is distinguishable from the page`, () => {
@@ -66,14 +82,23 @@ for (const mode of ['light', 'dark'] as const) {
     // 1px border does the separating. What must not happen is the two being
     // literally the same colour, which leaves the block with no edge at all.
     const ratio = contrast(bg, page);
-    assert.ok(ratio >= 1.05, `${mode} surface ${bg} is only ${ratio.toFixed(2)}:1 against ${page}`);
+    assert.ok(
+      ratio >= 1.05,
+      `${mode} surface ${bg} is only ${ratio.toFixed(2)}:1 against ${page}`
+    );
   });
 }
 
 test('the light surface is light and the dark surface is dark', () => {
   // The complaint that started this: a black code block on a white page.
-  assert.ok(luminance(CODE_PALETTE.light.bg) > 0.7, 'light-mode code blocks must be a light surface');
-  assert.ok(luminance(CODE_PALETTE.dark.bg) < 0.1, 'dark-mode code blocks must be a dark surface');
+  assert.ok(
+    luminance(CODE_PALETTE.light.bg) > 0.7,
+    'light-mode code blocks must be a light surface'
+  );
+  assert.ok(
+    luminance(CODE_PALETTE.dark.bg) < 0.1,
+    'dark-mode code blocks must be a dark surface'
+  );
 });
 
 test('every palette role is wired to a CSS custom property in the theme', () => {
@@ -90,6 +115,9 @@ test('every palette role is wired to a CSS custom property in the theme', () => 
   const chrome = new Set(['page', 'headerBg', 'headerFg', 'lineNumber']);
   for (const role of Object.keys(CODE_PALETTE.light)) {
     if (chrome.has(role)) continue;
-    assert.ok(used.has(role), `--code-${role} is defined but no token type uses it`);
+    assert.ok(
+      used.has(role),
+      `--code-${role} is defined but no token type uses it`
+    );
   }
 });

@@ -14,15 +14,28 @@ export const metadata: Metadata = {
     default: 'Ice Manual',
     template: '%s | Ice Manual'
   },
-  description: 'Learn how to develop and deploy networked applications with Ice.',
-  keywords: ['Ice', 'ZeroC', 'RPC', 'networking', 'documentation', 'docs', 'guide'],
+  description:
+    'Learn how to develop and deploy networked applications with Ice.',
+  keywords: [
+    'Ice',
+    'ZeroC',
+    'RPC',
+    'networking',
+    'documentation',
+    'docs',
+    'guide'
+  ],
   robots: {
     index: true,
     follow: true
   }
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body>

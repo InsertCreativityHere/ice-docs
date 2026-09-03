@@ -317,7 +317,7 @@
   }
 
   code {
-    @apply border-hairline text-ink bg-surface-sunken break-all rounded-sm border px-1 py-0.5 font-mono text-[0.9em] md:break-normal;
+    @apply border-hairline text-ink bg-surface-sunken rounded-sm border px-1 py-0.5 font-mono text-[0.9em] break-all md:break-normal;
   }
 
   a code {
@@ -592,7 +592,6 @@
     margin-block: 0.5rem;
   }
 }
-
 
 .sr-only {
   border: 0 !important;

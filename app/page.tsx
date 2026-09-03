@@ -5,8 +5,18 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { load as yamlLoad } from 'js-yaml';
 
-import { listVersions, readNavigationYaml, pageExists } from '@/lib/docs-model/content';
-import { landingSlug, languageLabel, pageHref, type NavDoc, type NavNode } from '@/lib/docs-model/nav';
+import {
+  listVersions,
+  readNavigationYaml,
+  pageExists
+} from '@/lib/docs-model/content';
+import {
+  landingSlug,
+  languageLabel,
+  pageHref,
+  type NavDoc,
+  type NavNode
+} from '@/lib/docs-model/nav';
 import { HeaderControls } from '@/components/ice/HeaderControls';
 import type { LanguageOption } from '@/components/ice/LanguageSelect';
 import type { VersionOption } from '@/components/ice/VersionSelect';
@@ -25,14 +35,18 @@ function newestVersion(root: string): string | undefined {
 export default function Home() {
   const root = contentRoot();
   const version = newestVersion(root);
-  const nav = version ? (yamlLoad(readNavigationYaml(root, version) ?? '') as NavDoc) : null;
+  const nav = version
+    ? (yamlLoad(readNavigationYaml(root, version) ?? '') as NavDoc)
+    : null;
   const language = nav?.languages?.[0] ?? 'cpp';
 
   if (!nav || !version) {
     return (
       <div className="mx-auto max-w-3xl px-6 py-24">
         <h1 className="text-3xl font-bold">Ice Documentation</h1>
-        <p className="text-ink-secondary mt-4">No documentation versions are published yet.</p>
+        <p className="text-ink-secondary mt-4">
+          No documentation versions are published yet.
+        </p>
       </div>
     );
   }
@@ -42,7 +56,8 @@ export default function Home() {
   const startHref = href(landing);
   const languages = nav.languages ?? [];
 
-  const available = (node: NavNode) => !!node.page && pageExists(root, version, language, node.page);
+  const available = (node: NavNode) =>
+    !!node.page && pageExists(root, version, language, node.page);
 
   // The manual's chapters, minus the front page (the hero already points there)
   // and the release notes, which get their own list below.
@@ -50,7 +65,9 @@ export default function Home() {
   const chapters = (nav.sidebar ?? []).filter(
     (node) => available(node) && node.page !== landing && !isReleaseNotes(node)
   );
-  const releaseNotes = ((nav.sidebar ?? []).find(isReleaseNotes)?.items ?? []).filter(available);
+  const releaseNotes = (
+    (nav.sidebar ?? []).find(isReleaseNotes)?.items ?? []
+  ).filter(available);
 
   // The same controls the article pages put in the top bar. A reader who lands
   // here from a search engine can pick their version and language before they
@@ -80,15 +97,15 @@ export default function Home() {
           as a technical manual rather than a product launch. */}
       <section className="relative overflow-hidden bg-[linear-gradient(110deg,#181743_0%,#1e3887_52%,#0a5f75_100%)] text-white">
         <div className="mx-auto max-w-180 px-6 py-16 sm:py-20">
-          <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-white/65">
+          <p className="text-[13px] font-semibold tracking-[0.08em] text-white/65 uppercase">
             Ice {version}
           </p>
-          <h1 className="mt-3 text-[clamp(2.25rem,4.2vw,2.75rem)] font-bold leading-[1.08] tracking-tight text-white">
+          <h1 className="mt-3 text-[clamp(2.25rem,4.2vw,2.75rem)] leading-[1.08] font-bold tracking-tight text-white">
             Ice Documentation
           </h1>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-white/85">
-            Ice is a complete RPC framework for building secure, high-performance networked
-            applications.
+            Ice is a complete RPC framework for building secure,
+            high-performance networked applications.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
@@ -102,7 +119,7 @@ export default function Home() {
           {/* The full list of mappings, in an order a reader can scan. */}
           {languages.length > 0 && (
             <div className="mt-9 border-t border-white/15 pt-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/55">
+              <p className="text-[11px] font-semibold tracking-[0.08em] text-white/55 uppercase">
                 Available for
               </p>
               <ul className="mt-2 flex flex-wrap gap-x-2 gap-y-1.5 text-sm text-white/85">
@@ -115,7 +132,7 @@ export default function Home() {
                     )}
                     <Link
                       href={`/ice/${version}/${lang}/${landing}`}
-                      className="rounded-sm transition hover:text-white hover:underline underline-offset-4"
+                      className="rounded-sm underline-offset-4 transition hover:text-white hover:underline"
                     >
                       {languageLabel(lang)}
                     </Link>
@@ -133,7 +150,11 @@ export default function Home() {
           <h2 className="text-ink text-xl font-semibold">Browse the manual</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {chapters.map((chapter) => (
-              <HubCard key={chapter.page} href={href(chapter.page!)} title={chapter.title} />
+              <HubCard
+                key={chapter.page}
+                href={href(chapter.page!)}
+                title={chapter.title}
+              />
             ))}
           </div>
         </section>
@@ -184,7 +205,9 @@ function HubCard({
           className="size-4 -translate-x-1 opacity-0 transition duration-150 group-hover:translate-x-0 group-hover:opacity-100"
         />
       </div>
-      {description && <p className="text-ink-secondary mt-1.5 text-sm">{description}</p>}
+      {description && (
+        <p className="text-ink-secondary mt-1.5 text-sm">{description}</p>
+      )}
     </Link>
   );
 }

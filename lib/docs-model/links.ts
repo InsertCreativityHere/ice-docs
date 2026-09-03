@@ -35,9 +35,10 @@ export interface PageEntry {
  * A collision between two pages' final segments is reported by `duplicates` and
  * resolves to the first path in sorted order (deterministic).
  */
-export function buildPageIndex(
-  pages: (string | PageEntry)[]
-): { index: PageIndex; duplicates: string[] } {
+export function buildPageIndex(pages: (string | PageEntry)[]): {
+  index: PageIndex;
+  duplicates: string[];
+} {
   const entries = [...pages]
     .map((p) => (typeof p === 'string' ? { path: p } : p))
     .sort((a, b) => a.path.localeCompare(b.path));
@@ -90,7 +91,8 @@ const MAILTO = /^mailto:/i;
 export function resolveDocLink(href: string, ctx: LinkContext): ResolvedLink {
   const raw = (href ?? '').trim();
   if (!raw) return { href: raw, resolved: true };
-  if (EXTERNAL.test(raw) || MAILTO.test(raw)) return { href: raw, resolved: true };
+  if (EXTERNAL.test(raw) || MAILTO.test(raw))
+    return { href: raw, resolved: true };
   if (raw.startsWith('#')) return { href: raw, resolved: true };
   if (raw.startsWith('/')) return { href: raw, resolved: true };
 
@@ -100,7 +102,9 @@ export function resolveDocLink(href: string, ctx: LinkContext): ResolvedLink {
 
   // Drop the `./` and `../` prefixes the export produced: they encoded "a sibling
   // page", not a real filesystem relationship.
-  const segments = path.split('/').filter((s) => s !== '' && s !== '.' && s !== '..');
+  const segments = path
+    .split('/')
+    .filter((s) => s !== '' && s !== '.' && s !== '..');
   if (segments.length === 0) return { href: raw, resolved: true };
   if (segments[0] === 'attachments') return { href: raw, resolved: true };
 
@@ -110,5 +114,8 @@ export function resolveDocLink(href: string, ctx: LinkContext): ResolvedLink {
   const target = ctx.index[full] ?? ctx.index[key];
   if (!target) return { href: raw, resolved: false };
 
-  return { href: `/ice/${ctx.version}/${ctx.language}/${target}${hash}`, resolved: true };
+  return {
+    href: `/ice/${ctx.version}/${ctx.language}/${target}${hash}`,
+    resolved: true
+  };
 }

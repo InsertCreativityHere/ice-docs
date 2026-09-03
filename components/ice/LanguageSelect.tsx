@@ -28,10 +28,12 @@ export function LanguageSelect({ current, options }: LanguageSelectProps) {
         aria-label="Programming language"
         value={current}
         onChange={(event) => {
-          const next = options.find((option) => option.value === event.target.value);
+          const next = options.find(
+            (option) => option.value === event.target.value
+          );
           if (next) router.push(next.href);
         }}
-        className="w-[6rem] cursor-pointer truncate rounded-md border border-black/15 bg-transparent py-1 pl-3 pr-8 text-sm hover:border-black/30 focus:outline-none xl:w-[7.5rem] dark:border-white/20 dark:hover:border-white/40"
+        className="w-[6rem] cursor-pointer truncate rounded-md border border-black/15 bg-transparent py-1 pr-8 pl-3 text-sm hover:border-black/30 focus:outline-none xl:w-[7.5rem] dark:border-white/20 dark:hover:border-white/40"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>

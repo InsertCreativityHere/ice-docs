@@ -1,0 +1,16 @@
+# Generated or vendored
+node_modules
+.next
+out
+build
+next-env.d.ts
+package-lock.json
+public
+utils/prism-*.js
+
+# The manual: Markdown with Markdoc tags, governed by markdownlint and
+# check-content, not by Prettier.
+content
+
+# Local tooling state
+.claude

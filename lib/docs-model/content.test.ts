@@ -17,10 +17,14 @@ import {
   listPageParams,
   readNavigationYaml,
   snippetReader,
-  listPageEntries,
+  listPageEntries
 } from './content.ts';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '__fixtures__', 'content');
+const ROOT = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '__fixtures__',
+  'content'
+);
 
 test('listVersions finds 3.8 and ignores non-version dirs', () => {
   const versions = listVersions(ROOT);
@@ -43,13 +47,18 @@ test('readPageSources returns shared and overlay presence correctly', () => {
 });
 
 test('pageLanguages: a shared page is available in every configured language', () => {
-  assert.deepEqual(pageLanguages(ROOT, '3.8', 'get-started', ['cpp', 'python']), ['cpp', 'python']);
+  assert.deepEqual(
+    pageLanguages(ROOT, '3.8', 'get-started', ['cpp', 'python']),
+    ['cpp', 'python']
+  );
 });
 
 test('listPageParams enumerates version x language x slug, respecting availability', () => {
   const params = listPageParams(ROOT, { '3.8': ['cpp', 'python'] });
   const has = (language: string, slug: string) =>
-    params.some((p) => p.version === '3.8' && p.language === language && p.slug === slug);
+    params.some(
+      (p) => p.version === '3.8' && p.language === language && p.slug === slug
+    );
 
   assert.ok(has('cpp', 'enumerations'));
   assert.ok(has('python', 'get-started'));
@@ -58,7 +67,9 @@ test('listPageParams enumerates version x language x slug, respecting availabili
   assert.ok(has('cpp', 'datastorm'));
   assert.ok(!has('python', 'datastorm'));
   // never emit a param outside the requested language set
-  assert.ok(params.every((p) => p.language === 'cpp' || p.language === 'python'));
+  assert.ok(
+    params.every((p) => p.language === 'cpp' || p.language === 'python')
+  );
 });
 
 test('snippetReader resolves example files relative to the version dir', () => {

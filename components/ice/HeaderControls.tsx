@@ -28,7 +28,9 @@ export function HeaderControls({
 }: HeaderControlsProps) {
   // The portal target only exists once the header has rendered on the client.
   const mounted = useMounted();
-  const target = mounted ? document.getElementById('ice-header-controls') : null;
+  const target = mounted
+    ? document.getElementById('ice-header-controls')
+    : null;
   if (!target) return null;
 
   return createPortal(

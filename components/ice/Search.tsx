@@ -38,7 +38,9 @@ export function Search({ version, language }: SearchProps) {
   // The index is per version+language, so it is cached under that key rather
   // than cleared when either changes.
   const indexKey = `${version}/${language}`;
-  const [index, setIndex] = useState<{ key: string; pages: Record[] } | null>(null);
+  const [index, setIndex] = useState<{ key: string; pages: Record[] } | null>(
+    null
+  );
   const records = index?.key === indexKey ? index.pages : null;
 
   // ⌘K / Ctrl-K from anywhere, Escape to leave.
@@ -111,9 +113,20 @@ export function Search({ version, language }: SearchProps) {
         }}
         className="flex shrink-0 items-center gap-2 rounded-md border border-black/15 px-2 py-1 text-sm opacity-70 hover:opacity-100 lg:px-3 dark:border-white/20"
       >
-        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 20 20"
+          fill="none"
+          aria-hidden="true"
+        >
           <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="2" />
-          <path d="M13.5 13.5 L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path
+            d="M13.5 13.5 L18 18"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
         </svg>
         <span className="hidden lg:inline">Search</span>
         <kbd className="hidden rounded border border-black/15 px-1 text-[10px] xl:inline dark:border-white/20">
@@ -160,7 +173,9 @@ export function Search({ version, language }: SearchProps) {
             <div className="overflow-y-auto">
               {query && results.length === 0 && (
                 <p className="px-4 py-6 text-sm opacity-60">
-                  {records === null ? 'Loading the index…' : `No page matches “${query}”.`}
+                  {records === null
+                    ? 'Loading the index…'
+                    : `No page matches “${query}”.`}
                 </p>
               )}
 
@@ -177,12 +192,14 @@ export function Search({ version, language }: SearchProps) {
                   <span className="flex items-center gap-2">
                     <span className="font-medium">{record.t}</span>
                     {record.k && (
-                      <span className="rounded-full bg-black/5 px-1.5 py-0.5 text-[10px] uppercase tracking-wide opacity-60 dark:bg-white/10">
+                      <span className="rounded-full bg-black/5 px-1.5 py-0.5 text-[10px] tracking-wide uppercase opacity-60 dark:bg-white/10">
                         {record.k}
                       </span>
                     )}
                   </span>
-                  {record.c && <span className="text-xs opacity-50">{record.c}</span>}
+                  {record.c && (
+                    <span className="text-xs opacity-50">{record.c}</span>
+                  )}
                 </button>
               ))}
             </div>

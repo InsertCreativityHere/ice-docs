@@ -60,7 +60,11 @@ export const AppLink = ({
       className={className}
       style={style}
     >
-      <span className={clsx(external && showArrow && 'with-arrow whitespace-nowrap')}>
+      <span
+        className={clsx(
+          external && showArrow && 'with-arrow whitespace-nowrap'
+        )}
+      >
         {children}
       </span>
 

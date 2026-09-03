@@ -1,6 +1,12 @@
 // Copyright (c) ZeroC, Inc.
 
-import { Children, cloneElement, isValidElement, type ReactElement, type ReactNode } from 'react';
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  type ReactElement,
+  type ReactNode
+} from 'react';
 import { clsx } from 'clsx';
 import {
   CircleAlert,
@@ -33,15 +39,30 @@ export type CalloutType =
 //
 // A callout is for information a reader can skip without losing the thread. If
 // removing it would break the explanation, it belongs in the prose.
-const INTENTS: Record<CalloutType, { label: string; icon: LucideIcon; className: string }> = {
+const INTENTS: Record<
+  CalloutType,
+  { label: string; icon: LucideIcon; className: string }
+> = {
   note: { label: 'Note', icon: Info, className: 'callout-note' },
   // The migrated manual writes `type="info"`; it is the same thing as a note.
   info: { label: 'Note', icon: Info, className: 'callout-note' },
   tip: { label: 'Tip', icon: Lightbulb, className: 'callout-tip' },
-  important: { label: 'Important', icon: CircleAlert, className: 'callout-important' },
-  warning: { label: 'Warning', icon: TriangleAlert, className: 'callout-warning' },
+  important: {
+    label: 'Important',
+    icon: CircleAlert,
+    className: 'callout-important'
+  },
+  warning: {
+    label: 'Warning',
+    icon: TriangleAlert,
+    className: 'callout-warning'
+  },
   danger: { label: 'Danger', icon: OctagonAlert, className: 'callout-danger' },
-  deprecated: { label: 'Deprecated', icon: PackageMinus, className: 'callout-deprecated' },
+  deprecated: {
+    label: 'Deprecated',
+    icon: PackageMinus,
+    className: 'callout-deprecated'
+  },
   // Version and platform differences — the note a manual covering several Ice
   // releases needs constantly ("not available before Ice 3.8").
   compatibility: {
@@ -64,7 +85,9 @@ type Props = {
 function quietCodeBlocks(children: ReactNode): ReactNode {
   return Children.map(children, (child) =>
     isValidElement(child) && child.type === CodeBlock
-      ? cloneElement(child as ReactElement<{ showTitle?: boolean }>, { showTitle: false })
+      ? cloneElement(child as ReactElement<{ showTitle?: boolean }>, {
+          showTitle: false
+        })
       : child
   );
 }

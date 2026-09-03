@@ -31,7 +31,11 @@ import {
   parseLanguageSections,
   splitFrontmatter
 } from '../lib/docs-model/resolve.ts';
-import { listVersions, listPageEntries, readNavigationYaml } from '../lib/docs-model/content.ts';
+import {
+  listVersions,
+  listPageEntries,
+  readNavigationYaml
+} from '../lib/docs-model/content.ts';
 import { navigationSlugs } from '../lib/docs-model/nav.ts';
 
 const strict = process.argv.includes('--strict');
@@ -59,9 +63,15 @@ const IMAGE_RE = /!\[([^\]]*)\]\(([^)]*)\)/g;
 // prose is usually a Slice or C++ generic (`sequence<int>`, `shared_ptr<T>`),
 // so only tags that a converter emits are listed.
 const STRAY_MARKUP = [
-  { name: 'raw HTML block tag', re: /<\/?(?:div|table|tbody|thead|tr|td|th|p|span|br|hr|img)\b[^>]*>/gi },
+  {
+    name: 'raw HTML block tag',
+    re: /<\/?(?:div|table|tbody|thead|tr|td|th|p|span|br|hr|img)\b[^>]*>/gi
+  },
   { name: 'Confluence storage markup', re: /<\/?(?:ac|ri):[a-z-]+/gi },
-  { name: 'Confluence wiki macro', re: /\{(?:code|panel|noformat|info|note|warning|tip)(?::[^}]*)?\}/g },
+  {
+    name: 'Confluence wiki macro',
+    re: /\{(?:code|panel|noformat|info|note|warning|tip)(?::[^}]*)?\}/g
+  },
   { name: 'HTML entity', re: /&(?:nbsp|amp|lt|gt|quot|#\d+);/g }
 ];
 
@@ -108,7 +118,9 @@ function checkImages(version, files) {
       // Whitespace in the target stops CommonMark treating this as an image at
       // all: the reader gets the literal markup in the middle of a paragraph.
       if (/\s/.test(target)) {
-        fail(`${relative}: image target contains whitespace, so it renders as text: "${target}"`);
+        fail(
+          `${relative}: image target contains whitespace, so it renders as text: "${target}"`
+        );
         continue;
       }
       if (!target.trim()) {
@@ -120,7 +132,8 @@ function checkImages(version, files) {
       if (!alt.trim()) {
         fail(`${relative}: image has no alt text: "${target}"`);
       }
-      if (/^(?:https?:)?\/\//.test(target) || target.startsWith('data:')) continue;
+      if (/^(?:https?:)?\/\//.test(target) || target.startsWith('data:'))
+        continue;
 
       if (!fs.existsSync(imageFileFor(target, file))) {
         missing.set(target, (missing.get(target) ?? 0) + 1);
@@ -129,13 +142,18 @@ function checkImages(version, files) {
   }
 
   const missingCount = [...missing.values()].reduce((a, b) => a + b, 0);
-  console.log(`${version}: ${total} images, ${missingCount} missing (${missing.size} distinct)`);
+  console.log(
+    `${version}: ${total} images, ${missingCount} missing (${missing.size} distinct)`
+  );
   if (missingCount) {
     for (const [target, count] of [...missing.entries()].slice(0, 10)) {
       console.log(`  ${String(count).padStart(4)}  ${target}`);
     }
     if (missing.size > 10) console.log(`  ...and ${missing.size - 10} more`);
-    if (strict) fail(`${version}: ${missingCount} images point at files that do not exist`);
+    if (strict)
+      fail(
+        `${version}: ${missingCount} images point at files that do not exist`
+      );
   }
 }
 
@@ -154,7 +172,12 @@ const UNCLASSIFIED_SLOT_BASELINE = 462;
 function checkSlots(version, languages) {
   const shared = path.join(ROOT, version, 'shared');
   const langRoot = path.join(ROOT, version, 'languages');
-  const counts = { content: 0, 'no-addition': 0, 'not-applicable': 0, unclassified: 0 };
+  const counts = {
+    content: 0,
+    'no-addition': 0,
+    'not-applicable': 0,
+    unclassified: 0
+  };
   const perLanguage = Object.fromEntries(languages.map((l) => [l, 0]));
   // slug -> language -> slot names still blank, for the `--slots` worklist.
   const blanks = new Map();
@@ -163,7 +186,9 @@ function checkSlots(version, languages) {
 
   for (const file of markdownFiles(shared)) {
     const slug = path.relative(shared, file).replace(/\.md$/, '');
-    const slots = declaredSlots(splitFrontmatter(fs.readFileSync(file, 'utf8')).body);
+    const slots = declaredSlots(
+      splitFrontmatter(fs.readFileSync(file, 'utf8')).body
+    );
     if (slots.length === 0) continue;
 
     for (const language of languages) {
@@ -171,15 +196,21 @@ function checkSlots(version, languages) {
       if (!fs.existsSync(overlayPath)) {
         // The shared page asks for language-specific prose and none exists.
         missing += slots.length;
-        fail(`${version}/${language}: "${slug}" declares ${slots.length} slot(s) but has no overlay`);
+        fail(
+          `${version}/${language}: "${slug}" declares ${slots.length} slot(s) but has no overlay`
+        );
         continue;
       }
 
       let sections;
       try {
-        sections = parseLanguageSections(splitFrontmatter(fs.readFileSync(overlayPath, 'utf8')).body);
+        sections = parseLanguageSections(
+          splitFrontmatter(fs.readFileSync(overlayPath, 'utf8')).body
+        );
       } catch (error) {
-        fail(`${version}/${language}: "${slug}" overlay is malformed — ${error.message}`);
+        fail(
+          `${version}/${language}: "${slug}" overlay is malformed — ${error.message}`
+        );
         continue;
       }
 
@@ -187,7 +218,9 @@ function checkSlots(version, languages) {
         const slot = sections.get(name);
         if (!slot) {
           missing++;
-          fail(`${version}/${language}: "${slug}" has no section for slot "${name}"`);
+          fail(
+            `${version}/${language}: "${slug}" has no section for slot "${name}"`
+          );
           continue;
         }
         counts[slot.state]++;
@@ -202,7 +235,9 @@ function checkSlots(version, languages) {
       for (const name of sections.keys()) {
         if (!slots.includes(name)) {
           unused++;
-          fail(`${version}/${language}: "${slug}" overlay defines unused section "${name}"`);
+          fail(
+            `${version}/${language}: "${slug}" overlay defines unused section "${name}"`
+          );
         }
       }
     }
@@ -221,7 +256,8 @@ function checkSlots(version, languages) {
     console.log('');
   }
 
-  const classified = counts.content + counts['no-addition'] + counts['not-applicable'];
+  const classified =
+    counts.content + counts['no-addition'] + counts['not-applicable'];
   console.log(
     `${version}: ${classified + counts.unclassified} language slots — ` +
       `${counts.content} content, ${counts['no-addition']} no-addition, ` +
@@ -233,7 +269,8 @@ function checkSlots(version, languages) {
       .filter(([, n]) => n > 0)
       .sort((a, b) => b[1] - a[1]);
     console.log(
-      '  unclassified by language: ' + worst.map(([l, n]) => `${l} ${n}`).join(', ')
+      '  unclassified by language: ' +
+        worst.map(([l, n]) => `${l} ${n}`).join(', ')
     );
   }
 
@@ -250,7 +287,9 @@ function checkSlots(version, languages) {
     );
   }
   if (strict && counts.unclassified) {
-    fail(`${version}: ${counts.unclassified} language slots do not say why they are blank`);
+    fail(
+      `${version}: ${counts.unclassified} language slots do not say why they are blank`
+    );
   }
   return { missing, unused };
 }
@@ -262,7 +301,9 @@ function checkStrayMarkup(files) {
     for (const { name, re } of STRAY_MARKUP) {
       const hits = [...source.matchAll(re)];
       if (hits.length) {
-        fail(`${relative}: ${hits.length} × ${name} left by the migration (e.g. "${hits[0][0]}")`);
+        fail(
+          `${relative}: ${hits.length} × ${name} left by the migration (e.g. "${hits[0][0]}")`
+        );
       }
     }
   }
@@ -284,17 +325,22 @@ for (const version of listVersions(ROOT)) {
 
   // 1. every page is reachable from the navigation
   const orphans = slugs.filter((slug) => !declared.has(slug));
-  for (const slug of orphans.slice(0, 20)) fail(`${version}: "${slug}" is not in navigation.yaml`);
-  if (orphans.length > 20) fail(`${version}: ...and ${orphans.length - 20} more unreachable pages`);
+  for (const slug of orphans.slice(0, 20))
+    fail(`${version}: "${slug}" is not in navigation.yaml`);
+  if (orphans.length > 20)
+    fail(`${version}: ...and ${orphans.length - 20} more unreachable pages`);
 
   // 2. every navigation entry exists
   const known = new Set(slugs);
   const dangling = [...declared].filter((slug) => !known.has(slug));
-  for (const slug of dangling.slice(0, 20)) fail(`${version}: navigation points at missing page "${slug}"`);
-  if (dangling.length > 20) fail(`${version}: ...and ${dangling.length - 20} more missing pages`);
+  for (const slug of dangling.slice(0, 20))
+    fail(`${version}: navigation points at missing page "${slug}"`);
+  if (dangling.length > 20)
+    fail(`${version}: ...and ${dangling.length - 20} more missing pages`);
 
   // 3. slugs are unique (cross-page links are keyed by them)
-  for (const dup of duplicates) fail(`${version}: duplicate page name "${dup}"`);
+  for (const dup of duplicates)
+    fail(`${version}: duplicate page name "${dup}"`);
 
   // 4. cross-page links resolve — checked once per language, because a page that
   //    exists only in C++ must not resolve while rendering the Python manual.
@@ -314,7 +360,9 @@ for (const version of listVersions(ROOT)) {
 
   let total = 0;
   for (const language of languages) {
-    const { index: languageIndex } = buildPageIndex(listPageEntries(ROOT, version, language));
+    const { index: languageIndex } = buildPageIndex(
+      listPageEntries(ROOT, version, language)
+    );
     for (const file of files) {
       // An overlay is only ever rendered for its own language. `files` holds
       // platform-native paths, so match either separator — on Windows a
@@ -324,10 +372,17 @@ for (const version of listVersions(ROOT)) {
       if (overlay && overlay[1] !== language) continue;
 
       const source = fs.readFileSync(file, 'utf8');
-      const targets = [...source.matchAll(LINK_RE), ...source.matchAll(CARD_HREF_RE)];
+      const targets = [
+        ...source.matchAll(LINK_RE),
+        ...source.matchAll(CARD_HREF_RE)
+      ];
       for (const match of targets) {
         total++;
-        if (resolveDocLink(match[1], { version, language, index: languageIndex }).resolved) continue;
+        if (
+          resolveDocLink(match[1], { version, language, index: languageIndex })
+            .resolved
+        )
+          continue;
         const key = `${match[1]} (${language})`;
         unresolved.set(key, (unresolved.get(key) ?? 0) + 1);
       }
@@ -335,11 +390,17 @@ for (const version of listVersions(ROOT)) {
   }
 
   const unresolvedCount = [...unresolved.values()].reduce((a, b) => a + b, 0);
-  console.log(`${version}: ${total} links, ${unresolvedCount} unresolved (${unresolved.size} distinct)`);
+  console.log(
+    `${version}: ${total} links, ${unresolvedCount} unresolved (${unresolved.size} distinct)`
+  );
   if (unresolvedCount) {
-    const worst = [...unresolved.entries()].sort((a, b) => b[1] - a[1]).slice(0, 15);
-    for (const [target, count] of worst) console.log(`  ${String(count).padStart(4)}  ${target}`);
-    if (strict) fail(`${version}: ${unresolvedCount} unresolved cross-page links`);
+    const worst = [...unresolved.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15);
+    for (const [target, count] of worst)
+      console.log(`  ${String(count).padStart(4)}  ${target}`);
+    if (strict)
+      fail(`${version}: ${unresolvedCount} unresolved cross-page links`);
   }
 }
 

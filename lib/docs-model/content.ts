@@ -28,7 +28,11 @@ export function listVersions(root: string): string[] {
   if (!fs.existsSync(root)) return [];
   return fs
     .readdirSync(root)
-    .filter((name) => /^\d+\.\d+/.test(name) && fs.statSync(path.join(root, name)).isDirectory())
+    .filter(
+      (name) =>
+        /^\d+\.\d+/.test(name) &&
+        fs.statSync(path.join(root, name)).isDirectory()
+    )
     .sort();
 }
 
@@ -40,7 +44,9 @@ function collectMarkdownSlugs(dir: string): string[] {
       const abs = path.join(current, entry);
       if (fs.statSync(abs).isDirectory()) walk(abs);
       else if (entry.endsWith('.md')) {
-        out.push(path.relative(dir, abs).replace(/\.md$/, '').split(path.sep).join('/'));
+        out.push(
+          path.relative(dir, abs).replace(/\.md$/, '').split(path.sep).join('/')
+        );
       }
     }
   };
@@ -55,7 +61,8 @@ export function listSlugs(root: string, version: string): string[] {
   const langDir = path.join(base, 'languages');
   if (fs.existsSync(langDir)) {
     for (const lang of fs.readdirSync(langDir)) {
-      for (const slug of collectMarkdownSlugs(path.join(langDir, lang))) slugs.add(slug);
+      for (const slug of collectMarkdownSlugs(path.join(langDir, lang)))
+        slugs.add(slug);
     }
   }
   return [...slugs].sort();
@@ -71,12 +78,17 @@ export function readPageSources(
   const base = path.join(root, version);
   return {
     shared: readIfExists(path.join(base, 'shared', `${slug}.md`)),
-    overlay: readIfExists(path.join(base, 'languages', language, `${slug}.md`)),
+    overlay: readIfExists(path.join(base, 'languages', language, `${slug}.md`))
   };
 }
 
 /** Whether a page exists in a version for a language (shared page or language overlay). */
-export function pageExists(root: string, version: string, language: string, slug: string): boolean {
+export function pageExists(
+  root: string,
+  version: string,
+  language: string,
+  slug: string
+): boolean {
   const { shared, overlay } = readPageSources(root, version, language, slug);
   return shared !== null || overlay !== null;
 }
@@ -92,7 +104,8 @@ export function pageLanguages(
   allLanguages: string[]
 ): string[] {
   const base = path.join(root, version);
-  if (fs.existsSync(path.join(base, 'shared', `${slug}.md`))) return [...allLanguages];
+  if (fs.existsSync(path.join(base, 'shared', `${slug}.md`)))
+    return [...allLanguages];
   return allLanguages.filter((lang) =>
     fs.existsSync(path.join(base, 'languages', lang, `${slug}.md`))
   );
@@ -105,7 +118,10 @@ export interface PageParam {
 }
 
 /** Every (version, language, slug) that should be statically generated. */
-export function listPageParams(root: string, languagesByVersion: Record<string, string[]>): PageParam[] {
+export function listPageParams(
+  root: string,
+  languagesByVersion: Record<string, string[]>
+): PageParam[] {
   const params: PageParam[] = [];
   for (const version of listVersions(root)) {
     const langs = languagesByVersion[version] ?? [];
@@ -119,7 +135,10 @@ export function listPageParams(root: string, languagesByVersion: Record<string, 
 }
 
 /** Raw navigation.yaml text for a version (parsed by the caller with js-yaml). */
-export function readNavigationYaml(root: string, version: string): string | null {
+export function readNavigationYaml(
+  root: string,
+  version: string
+): string | null {
   return readIfExists(path.join(root, version, 'navigation.yaml'));
 }
 
@@ -151,7 +170,11 @@ const pageEntryCache = new Map<string, PageEntry[]>();
  * thousands of pages and each would otherwise re-walk the whole content tree.
  * Never cached in development, where pages change while the server is running.
  */
-export function listPageEntries(root: string, version: string, language?: string): PageEntry[] {
+export function listPageEntries(
+  root: string,
+  version: string,
+  language?: string
+): PageEntry[] {
   const cacheable = process.env.NODE_ENV === 'production';
   // U+001F, not NUL: a NUL byte anywhere in a file makes git classify it as
   // binary, which excludes it from `* text=auto` normalization and from diffs.
@@ -163,7 +186,9 @@ export function listPageEntries(root: string, version: string, language?: string
   const entries: PageEntry[] = [];
   for (const slug of listSlugs(root, version)) {
     const shared = path.join(base, 'shared', `${slug}.md`);
-    const overlay = language ? path.join(base, 'languages', language, `${slug}.md`) : null;
+    const overlay = language
+      ? path.join(base, 'languages', language, `${slug}.md`)
+      : null;
 
     if (fs.existsSync(shared)) {
       entries.push({ path: slug, id: readPageId(shared) });
@@ -172,7 +197,8 @@ export function listPageEntries(root: string, version: string, language?: string
     // No shared page: this is a language-specific page. Include it only when it
     // exists for the language being rendered.
     if (overlay) {
-      if (fs.existsSync(overlay)) entries.push({ path: slug, id: readPageId(overlay) });
+      if (fs.existsSync(overlay))
+        entries.push({ path: slug, id: readPageId(overlay) });
       continue;
     }
     const langDir = path.join(base, 'languages');
@@ -190,7 +216,10 @@ export function listPageEntries(root: string, version: string, language?: string
 }
 
 /** A snippet reader bound to a version: resolves `file=` relative to `<root>/<version>/`. */
-export function snippetReader(root: string, version: string): (file: string) => string {
+export function snippetReader(
+  root: string,
+  version: string
+): (file: string) => string {
   const base = path.join(root, version);
   return (file: string) => fs.readFileSync(path.join(base, file), 'utf8');
 }

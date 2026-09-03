@@ -67,7 +67,9 @@ function navFor(version: string): NavDoc | null {
 
 function frontmatterOf(source: string): Record<string, string> {
   const { frontmatter } = splitFrontmatter(source);
-  return frontmatter ? ((yamlLoad(frontmatter) as Record<string, string>) ?? {}) : {};
+  return frontmatter
+    ? ((yamlLoad(frontmatter) as Record<string, string>) ?? {})
+    : {};
 }
 
 export function generateStaticParams() {
@@ -86,7 +88,12 @@ export function generateStaticParams() {
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const { version, language, slug } = await props.params;
   const page = (slug ?? []).join('/');
-  const { shared, overlay } = readPageSources(contentRoot(), version, language, page);
+  const { shared, overlay } = readPageSources(
+    contentRoot(),
+    version,
+    language,
+    page
+  );
   const fm = frontmatterOf(shared ?? overlay ?? '');
   return { title: fm.title ?? '', description: fm.description ?? '' };
 }
@@ -121,7 +128,9 @@ export default async function Page(props: PageProps) {
   // renaming a page never breaks the links pointing at it. The index holds only
   // the pages this language actually has, so a link is never rewritten to a URL
   // that was not generated.
-  const { index: pageIndex } = buildPageIndex(listPageEntries(root, version, language));
+  const { index: pageIndex } = buildPageIndex(
+    listPageEntries(root, version, language)
+  );
 
   // Migrated content can contain conversion artifacts; surface a render error on
   // the page instead of failing the whole build, so we can see what's broken.
@@ -149,7 +158,8 @@ export default async function Page(props: PageProps) {
         // pages under the Property Reference chapter — rather than restated in
         // the frontmatter of every one of them; a page can still override it.
         shape:
-          page !== 'property-reference' && trail.some((n) => n.page === 'property-reference')
+          page !== 'property-reference' &&
+          trail.some((n) => n.page === 'property-reference')
             ? 'property-list'
             : undefined
       }
@@ -174,8 +184,14 @@ export default async function Page(props: PageProps) {
   const languageOptions: LanguageOption[] = languages.map((lang) => {
     const exists = (slug: string) => pageExists(root, version, lang, slug);
     const counterpart = counterpartSlug(sidebar, page, lang);
-    const equivalent = exists(page) ? page : counterpart && exists(counterpart) ? counterpart : undefined;
-    const nearest = [...trail].reverse().find((n) => n.page && n.page !== page && exists(n.page));
+    const equivalent = exists(page)
+      ? page
+      : counterpart && exists(counterpart)
+        ? counterpart
+        : undefined;
+    const nearest = [...trail]
+      .reverse()
+      .find((n) => n.page && n.page !== page && exists(n.page));
     return {
       value: lang,
       label: languageLabel(lang),
@@ -189,7 +205,9 @@ export default async function Page(props: PageProps) {
   const versionOptions: VersionOption[] = listVersions(root).map((other) => {
     const otherNav = other === version ? nav : navFor(other);
     const otherLanguages = otherNav?.languages ?? languages;
-    const otherLanguage = otherLanguages.includes(language) ? language : otherLanguages[0] ?? language;
+    const otherLanguage = otherLanguages.includes(language)
+      ? language
+      : (otherLanguages[0] ?? language);
     const exists = pageExists(root, other, otherLanguage, page);
     const href = versionSwitchTarget({
       targetVersion: other,

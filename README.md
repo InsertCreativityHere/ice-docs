@@ -19,6 +19,8 @@ npm run check:content              # navigation, links, images, slots, migration
 npm run check:content -- --strict  # also fail on unresolved links and missing images
 npm run check:content -- --slots   # list the blank language sections still to classify
 npm run lint                       # eslint
+npm run format                     # prettier, over everything but the manual
+npm run format:check               # what CI runs
 ```
 
 `dev` and `build` first regenerate the search index under `public/search/`

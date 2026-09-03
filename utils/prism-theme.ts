@@ -32,7 +32,10 @@ export const iceCodeTheme: PrismTheme = {
       types: ['comment', 'prolog', 'doctype', 'cdata'],
       style: { color: v('comment'), fontStyle: 'italic' }
     },
-    { types: ['punctuation', 'operator', 'entity'], style: { color: v('punctuation') } },
+    {
+      types: ['punctuation', 'operator', 'entity'],
+      style: { color: v('punctuation') }
+    },
     {
       types: ['keyword', 'atrule', 'rule', 'important', 'selector'],
       style: { color: v('keyword') }
@@ -45,12 +48,25 @@ export const iceCodeTheme: PrismTheme = {
       types: ['number', 'boolean', 'constant', 'symbol', 'variable'],
       style: { color: v('number') }
     },
-    { types: ['function', 'method', 'function-name'], style: { color: v('function') } },
     {
-      types: ['class-name', 'builtin', 'tag', 'namespace', 'annotation', 'type-args'],
+      types: ['function', 'method', 'function-name'],
+      style: { color: v('function') }
+    },
+    {
+      types: [
+        'class-name',
+        'builtin',
+        'tag',
+        'namespace',
+        'annotation',
+        'type-args'
+      ],
       style: { color: v('type') }
     },
-    { types: ['attr-name', 'property', 'key'], style: { color: v('property') } },
+    {
+      types: ['attr-name', 'property', 'key'],
+      style: { color: v('property') }
+    },
     { types: ['inserted'], style: { color: v('inserted') } },
     { types: ['deleted'], style: { color: v('deleted') } }
   ]

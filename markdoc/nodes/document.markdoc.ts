@@ -32,7 +32,9 @@ const document = {
         prev: chrome.prev,
         next: chrome.next,
         readingTime:
-          frontmatter.showReadingTime !== false ? config.variables?.readingTime : undefined,
+          frontmatter.showReadingTime !== false
+            ? config.variables?.readingTime
+            : undefined,
         showReadingTime: frontmatter.showReadingTime,
         showDividers: frontmatter.showDividers,
         showNavigation: frontmatter.showNavigation

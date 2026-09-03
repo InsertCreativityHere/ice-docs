@@ -21,7 +21,11 @@ interface VersionSelectProps {
 // expensive thing for a reader to get wrong, and search engines land people on
 // old releases constantly. So the version is always spelled out in the top bar,
 // even when there is only one to choose from.
-export function VersionSelect({ current, options, previousVersions }: VersionSelectProps) {
+export function VersionSelect({
+  current,
+  options,
+  previousVersions
+}: VersionSelectProps) {
   const router = useRouter();
   const single = options.length <= 1 && !previousVersions;
 
@@ -48,14 +52,16 @@ export function VersionSelect({ current, options, previousVersions }: VersionSel
           const next = options.find((option) => option.value === value);
           if (next) router.push(next.href);
         }}
-        className="w-[8.5rem] cursor-pointer truncate rounded-md border border-black/15 bg-transparent py-1 pl-3 pr-8 text-sm hover:border-black/30 focus:outline-none xl:w-[10rem] dark:border-white/20 dark:hover:border-white/40"
+        className="w-[8.5rem] cursor-pointer truncate rounded-md border border-black/15 bg-transparent py-1 pr-8 pl-3 text-sm hover:border-black/30 focus:outline-none xl:w-[10rem] dark:border-white/20 dark:hover:border-white/40"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             Ice {option.value}
           </option>
         ))}
-        {previousVersions && <option value="__previous">{previousVersions.label}…</option>}
+        {previousVersions && (
+          <option value="__previous">{previousVersions.label}…</option>
+        )}
       </select>
     </label>
   );

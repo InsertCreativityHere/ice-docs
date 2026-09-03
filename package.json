@@ -9,6 +9,8 @@
     "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "node --test \"lib/**/*.test.ts\" \"utils/**/*.test.ts\"",
     "check:content": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-content.mjs"
   },

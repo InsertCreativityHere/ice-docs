@@ -25,7 +25,10 @@ export const Heading = ({
     <Component
       id={id}
       role="presentation"
-      className={clsx('items-center *:hover:opacity-100', level !== 1 && 'group scroll-mt-28')}
+      className={clsx(
+        'items-center *:hover:opacity-100',
+        level !== 1 && 'group scroll-mt-28'
+      )}
     >
       <div className="flex items-center justify-start">
         <span role="heading" aria-level={level}>

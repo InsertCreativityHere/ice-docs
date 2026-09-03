@@ -17,7 +17,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { load as yamlLoad } from 'js-yaml';
 
-import { listVersions, listSlugs, readNavigationYaml } from '../lib/docs-model/content.ts';
+import {
+  listVersions,
+  listSlugs,
+  readNavigationYaml
+} from '../lib/docs-model/content.ts';
 import { pageHref, trailTo } from '../lib/docs-model/nav.ts';
 import { FRONTMATTER_RE, splitLines } from '../lib/docs-model/resolve.ts';
 
@@ -58,7 +62,13 @@ function headings(body) {
     const heading = /^#{1,6}\s+(.+?)\s*(?<!\\)#*$/.exec(line);
     // Strip inline markdown so `**Ice.Default.Locator**` is searchable as text,
     // and resolve backslash escapes so `C\#` is searchable as C#.
-    if (heading) out.push(heading[1].replace(/[*_`[\]]/g, '').replace(/\\(.)/g, '$1').trim());
+    if (heading)
+      out.push(
+        heading[1]
+          .replace(/[*_`[\]]/g, '')
+          .replace(/\\(.)/g, '$1')
+          .trim()
+      );
   }
   return out;
 }
@@ -66,7 +76,12 @@ function headings(body) {
 /** Where a page sits, for the result's context line: "The Slice Language › User-Defined Types". */
 function crumbFor(nav, slug) {
   const trail = trailTo(nav.sidebar ?? [], slug);
-  return trail ? trail.slice(0, -1).map((node) => node.title).join(' › ') : '';
+  return trail
+    ? trail
+        .slice(0, -1)
+        .map((node) => node.title)
+        .join(' › ')
+    : '';
 }
 
 let files = 0;
@@ -83,7 +98,9 @@ for (const version of listVersions(ROOT)) {
     const pages = [];
     for (const slug of slugs) {
       const shared = readPage(path.join(base, 'shared', `${slug}.md`));
-      const overlay = readPage(path.join(base, 'languages', language, `${slug}.md`));
+      const overlay = readPage(
+        path.join(base, 'languages', language, `${slug}.md`)
+      );
       if (!shared && !overlay) continue; // not part of this language's manual
 
       const page = shared ?? overlay;

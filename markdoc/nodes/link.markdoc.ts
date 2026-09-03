@@ -25,7 +25,11 @@ const link = {
       index
     });
 
-    return new Tag('AppLink', { ...attributes, href, unresolved: !resolved }, children);
+    return new Tag(
+      'AppLink',
+      { ...attributes, href, unresolved: !resolved },
+      children
+    );
   }
 };
 

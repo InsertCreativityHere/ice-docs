@@ -64,7 +64,10 @@ test('an unknown page name is reported, not silently rewritten', () => {
 });
 
 test('resolution is case-insensitive and URL-decoded', () => {
-  assert.equal(resolveDocLink('../Enumerations', ctx).href, '/ice/3.8/cpp/learn/slice/enumerations');
+  assert.equal(
+    resolveDocLink('../Enumerations', ctx).href,
+    '/ice/3.8/cpp/learn/slice/enumerations'
+  );
   assert.equal(
     resolveDocLink('../ice-default-properties', ctx).href,
     '/ice/3.8/cpp/reference/properties/ice-default-properties'
@@ -89,7 +92,10 @@ test('buildPageIndex reports colliding final segments instead of hiding them', (
 });
 
 test('an explicit path wins over another page with the same final segment', () => {
-  const { index: idx } = buildPageIndex(['guides/security/overview', 'learn/slice/overview']);
+  const { index: idx } = buildPageIndex([
+    'guides/security/overview',
+    'learn/slice/overview'
+  ]);
   const ctx2 = { version: '3.8', language: 'cpp', index: idx };
   // Spelled out in full: unambiguous, and must not be hijacked by the bare name.
   assert.equal(
