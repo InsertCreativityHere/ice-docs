@@ -4,11 +4,12 @@ language: java
 ---
 
 {% language-section name="lang-1" %}
+
 You should install `IceDiscovery` in your communicator using the `pluginFactories` field of `InitializationData`:
 
 ```java
 InitializationData initData = new InitializationData();
-initData.pluginFactories = 
+initData.pluginFactories =
     Collections.singletonList(new com.zeroc.IceDiscovery.PluginFactory());
 
 try (Communicator communicator = Util.initialize(args)) {

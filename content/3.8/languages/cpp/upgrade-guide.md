@@ -37,12 +37,13 @@ It also includes the Slice tools for C++, so the `zeroc.icebuilder.msbuild` pack
 
 4. Select the desired **3.8 version** and click **Install**.
 5. **Rebuild** the solution.
+
 {% /language-section %}
 
 {% language-section name="lang-2" %}
 
 ```diff
--Ice::ObjectPrx proxy = 
+-Ice::ObjectPrx proxy =
 -    communicator->stringToProxy("greeter: tcp -h localhost -p 4061");
 -GreeterPrx greeter = Ice::uncheckedCast<GreeterPrx>(proxy);
 +GreeterPrx greeter{communicator, "greeter:tcp -h localhost -p 4061"};

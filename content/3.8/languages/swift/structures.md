@@ -4,7 +4,10 @@ language: swift
 ---
 
 {% language-section name="lang-1" %}
-A Slice structure maps to a Swift structure when this Slice structure does not have (recursively) any Slice class field. Conversely, a Slice structure maps to a Swift class when this Slice structure has (recursively) one or more Slice class field.
+
+A Slice structure maps to a Swift structure when this Slice structure does not have (recursively) any Slice class field.
+Conversely, a Slice structure maps to a Swift class when this Slice structure has (recursively) one or more Slice class
+field.
 
 ## Mapping to Swift Struct
 
@@ -34,9 +37,11 @@ public struct Point {
 }
 ```
 
-For each field in the Slice definition, the Swift structure contains a corresponding public stored property of the same name.
+For each field in the Slice definition, the Swift structure contains a corresponding public stored property of the same
+name.
 
-When all the stored properties of the generated Swift structure are `Hashable`, the generated structure is itself hashable. For example:
+When all the stored properties of the generated Swift structure are `Hashable`, the generated structure is itself
+hashable. For example:
 
 ```slice
 struct TimeOfDay
@@ -98,10 +103,14 @@ public class Entry {
 }
 ```
 
-For each field in the Slice definition, the Swift structure contains a corresponding public stored property of the same name. Fields with type class or proxy are mapped to Swift optionals: the mapped type for `value` in the example above is `Data?`.
+For each field in the Slice definition, the Swift structure contains a corresponding public stored property of the same
+name. Fields with type class or proxy are mapped to Swift optionals: the mapped type for `value` in the example above is
+`Data?`.
 
-{% callout type="success" %}
-A Slice structure is mapped to a Swift class when this Slice structure contains a class field anywhere: it can be a direct field or a nested field such as:
+{% callout type="tip" %}
+
+A Slice structure is mapped to a Swift class when this Slice structure contains a class field anywhere: it can be a
+direct field or a nested field such as:
 
 ```slice
 class Data
@@ -133,4 +142,5 @@ The mapped Swift struct or class has always two public initializers:
 
 - a memberwise initializer that initializes all properties explicitly
 - a parameterless initializer that assigns default values to all properties (see [Fields](../fields))
+
 {% /language-section %}

@@ -1,12 +1,14 @@
 // Copyright (c) ZeroC, Inc.
 
-import { Tag, Node, Config } from '@markdoc/markdoc';
+import { Tag, type Node, type Config } from '@markdoc/markdoc';
 
 const step = {
   render: 'Step',
   attributes: {
+    // The transform below derives the id from it.
     title: {
-      type: String
+      type: String,
+      required: true
     },
     level: {
       type: Number,

@@ -1,3 +1,7 @@
+# The compilable snippet sources that `{% snippet %}` pulls from keep the
+# style of the language they are written in, not the site's.
+content/*/examples
+
 # Generated or vendored
 node_modules
 .next
@@ -7,10 +11,6 @@ next-env.d.ts
 package-lock.json
 public
 utils/prism-*.js
-
-# The manual: Markdown with Markdoc tags, governed by markdownlint and
-# check-content, not by Prettier.
-content
 
 # Local tooling state
 .claude

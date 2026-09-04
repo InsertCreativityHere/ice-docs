@@ -4,6 +4,7 @@ language: js
 ---
 
 {% language-section name="lang-1" %}
+
 A Slice dictionary maps to:
 
 - A JavaScript Map when the Key is one of the Slice built-in types.
@@ -34,7 +35,8 @@ In this example, `EmployeeMap` maps to a JavaScript `Map` with:
 
 ### **Example: Dictionary with Struct Key**
 
-If the key is a Slice struct, the compiler generates code that uses [Ice.HashMap](https://code.zeroc.com/ice/3.8/api/javascript/Ice/HashMap.html).
+If the key is a Slice struct, the compiler generates code that uses
+[Ice.HashMap](https://code.zeroc.com/ice/3.8/api/javascript/Ice/HashMap.html).
 
 ```slice
 dictionary<Employee, string> EmployeeDeptMap;
@@ -57,4 +59,5 @@ class EmployeeDeptMap extends Ice.HashMap<Employee, string> { ... }
 
 - `new EmployeeDeptMap()` automatically sets the comparators for struct keys and values.
 - Using `new Ice.HashMap()` directly would require you to provide custom comparators yourself.
+
 {% /language-section %}

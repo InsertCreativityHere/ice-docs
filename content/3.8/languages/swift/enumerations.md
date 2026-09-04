@@ -4,6 +4,7 @@ language: swift
 ---
 
 {% language-section name="lang-1" %}
+
 A Slice enumeration maps to a Swift enumeration that stores raw values of type `UInt8` or `Int32`. For example:
 
 ```slice
@@ -23,7 +24,8 @@ public enum Fruit: UInt8 { 
 }
 ```
 
-The raw value type for the generated enumeration is `UInt8` when the largest enumerator value is 255 or less; otherwise, the raw value type is `Int32`.
+The raw value type for the generated enumeration is `UInt8` when the largest enumerator value is 255 or less; otherwise,
+the raw value type is `Int32`.
 
 Suppose we modify the Slice definition to include a custom enumerator value:
 

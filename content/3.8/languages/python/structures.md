@@ -4,7 +4,9 @@ language: python
 ---
 
 {% language-section name="lang-1" %}
-A Slice structure maps to a Python dataclass with the same name. For each Slice field, the Python dataclass contains a corresponding field. For example, here is our Employee structure once more:
+
+A Slice structure maps to a Python dataclass with the same name. For each Slice field, the Python dataclass contains a
+corresponding field. For example, here is our Employee structure once more:
 
 ```slice
 struct Employee
@@ -27,5 +29,8 @@ class Employee:
 
 All mapped fields have default values, such as `0` and the empty string (see [Fields](../fields) for details).
 
-For structures that are also [legal dictionary key types](../dictionaries), the mapped dataclass is configured with `order=True` and `unsafe_hash=True`, as shown in our example above. The hashing is “unsafe” because the mapped dataclass is not frozen.
+For structures that are also [legal dictionary key types](../dictionaries), the mapped dataclass is configured with
+`order=True` and `unsafe_hash=True`, as shown in our example above. The hashing is “unsafe” because the mapped dataclass
+is not frozen.
+
 {% /language-section %}
