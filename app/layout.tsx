@@ -3,6 +3,7 @@
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { IceHeader } from '@/components/ice/Header';
+import { Footer } from '@/components/ice/Footer';
 import { Inter } from 'next/font/google';
 import clsx from 'clsx';
 import { Metadata } from 'next';
@@ -47,9 +48,13 @@ export default function RootLayout({
         >
           <div className="flex min-h-screen flex-col">
             <IceHeader />
-            <main className={clsx(inter.className)} id="main">
+            <main
+              className={clsx('flex grow flex-col', inter.className)}
+              id="main"
+            >
               {children}
             </main>
+            <Footer />
           </div>
         </ThemeProvider>
       </body>

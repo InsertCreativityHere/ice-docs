@@ -250,7 +250,7 @@ export default async function Page(props: PageProps) {
           <SideNav nodes={sideNav} title={MANUAL_TITLE} />
 
           {/* Content */}
-          <div className="grow">
+          <div className="grow pb-8">
             <div id="skip-nav" />
             {renderError ? (
               <div className="mt-10 rounded border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">
