@@ -8,21 +8,10 @@ title: Protocol Compression
 Compression is an optional feature of the Ice protocol; whether it is used for a particular message is determined by
 several factors:
 
-1. Compression may not be supported on all platforms or in all language mappings.
+1. Compression is not supported by all language mappings (see [below](#compression-support-by-language-mapping)).
 2. Compression can be used in a request or batch request only if the peer [advertises](../data-encoding-for-proxies) the
    ability to accept compressed messages.
 3. For efficiency reasons, the Ice protocol engine does not compress messages smaller than 100 bytes.
-
-{% iflang langs="csharp" %}
-
-Ice for C# implements compression with the native bzip2 library: `bzip2.dll` on Windows, `libbz2.so.1` on Linux, and
-`libbz2.dylib` on macOS. Ice loads this library dynamically at run time, so it must be next to your application or in a
-directory on the system library path (`PATH` on Windows). The ZeroC.Ice NuGet package does not bundle it. Linux
-distributions and macOS provide it; on Windows, `bzip2.dll` is available from the ZeroC.Bzip2 NuGet package, the Ice for
-C++ NuGet package (ZeroC.Ice.Cpp), and the Windows installer. When Ice for C# cannot load the library, it sends all
-messages uncompressed and throws `FeatureNotSupportedException` when it receives a compressed message.
-
-{% /iflang %}
 
 {% callout type="tip" %}
 
@@ -58,7 +47,7 @@ accommodate the uncompressed message body.
 
 A client sends a compressed message if all the following conditions are true:
 
-- The client-side run time supports compression
+- The client-side runtime supports compression
 - The size of the uncompressed message is at least 100 bytes
 - The proxy endpoint on which the message will be sent has the compression flag (`-z` for
   [stringified endpoints](../endpoint-syntax))
@@ -86,11 +75,29 @@ A server examines the `compressionStatus` field of an incoming message header no
 itself is compressed but also to figure out whether the client requested a compressed reply. A server sends a compressed
 reply if all the following conditions are true:
 
-- The server-side run time supports compression
+- The server-side runtime supports compression
 - The size of the uncompressed reply is at least 100 bytes
 - The `compressionStatus` field of the corresponding request message has a value of 1 or 2
 
 Otherwise, the server sends an uncompressed reply.
+
+# Compression Support by Language Mapping
+
+Each language mapping obtains its bzip2 implementation differently:
+
+- **C++**, and the language mappings built on Ice for C++ (MATLAB, PHP, Python, Ruby, and Swift), link with the bzip2
+  library. Compression is always available.
+- **C#** loads the native bzip2 library dynamically at run time. The ZeroC.Ice NuGet package does not bundle this
+  library; see the [ZeroC.Ice README](https://www.nuget.org/packages/ZeroC.Ice) for the bzip2 library name on each
+  platform and where to get it.
+- **Java** uses the bzip2 classes of Apache Commons Compress, loaded reflectively at run time. Add
+  `org.apache.commons:commons-compress` to your application's class path to enable compression; see the
+  [Ice for Java README](https://github.com/zeroc-ice/ice/blob/3.8/java/README.md) for more information.
+- **JavaScript** does not support compression.
+
+A runtime without compression support sends all messages uncompressed. If it receives a compressed message, it aborts
+the connection: the sender gets a `ConnectionLostException`, and the receiver logs a warning when `Ice.Warn.Connections`
+is enabled.
 
 ##### See Also
 
