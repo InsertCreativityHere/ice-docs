@@ -21,8 +21,8 @@ import {
   buildSideNav,
   breadcrumbs,
   counterpartSlug,
-  landingSlug,
   languageLabel,
+  pageHref,
   prevNext,
   trailTo,
   versionSwitchTarget,
@@ -75,19 +75,32 @@ function frontmatterOf(source: string): Record<string, string> {
 export function generateStaticParams() {
   const root = contentRoot();
   const languagesByVersion: Record<string, string[]> = {};
+  const landingByVersion: Record<string, string> = {};
   for (const version of listVersions(root)) {
-    languagesByVersion[version] = navFor(version)?.languages ?? [];
+    const nav = navFor(version);
+    languagesByVersion[version] = nav?.languages ?? [];
+    if (nav) landingByVersion[version] = nav.landing;
   }
-  return listPageParams(root, languagesByVersion).map((p) => ({
-    version: p.version,
-    language: p.language,
-    slug: p.slug.split('/')
-  }));
+  // The landing page is served at the version and language root, not under its
+  // own slug.
+  const roots = Object.entries(languagesByVersion).flatMap(
+    ([version, languages]) =>
+      languages.map((language) => ({ version, language, slug: [] }))
+  );
+  const pages = listPageParams(root, languagesByVersion)
+    .filter((p) => p.slug !== landingByVersion[p.version])
+    .map((p) => ({
+      version: p.version,
+      language: p.language,
+      slug: p.slug.split('/')
+    }));
+  return [...roots, ...pages];
 }
 
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const { version, language, slug } = await props.params;
-  const page = (slug ?? []).join('/');
+  const nav = navFor(version);
+  const page = slug?.join('/') || nav?.landing || '';
   const { shared, overlay } = readPageSources(
     contentRoot(),
     version,
@@ -95,21 +108,28 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     page
   );
   const fm = frontmatterOf(shared ?? overlay ?? '');
-  return { title: fm.title ?? '', description: fm.description ?? '' };
+  // The front page is the manual itself, so its title is not suffixed with the
+  // manual's name.
+  const title =
+    page === nav?.landing ? { absolute: fm.title ?? '' } : (fm.title ?? '');
+  return { title, description: fm.description ?? '' };
 }
 
 export default async function Page(props: PageProps) {
   const { version, language, slug } = await props.params;
   const root = contentRoot();
-  const page = (slug ?? []).join('/');
-  if (!page) return notFound();
+  const nav = navFor(version);
+  if (!nav) return notFound();
+  const { languages, sidebar, landing } = nav;
+  const page = slug?.join('/') || landing;
 
   const { shared, overlay } = readPageSources(root, version, language, page);
   if (!shared && !overlay) return notFound();
 
-  const nav = navFor(version);
-  const languages = nav?.languages ?? [];
-  const sidebar = nav?.sidebar ?? [];
+  // The landing page lives at the version and language root, every other page
+  // under its slug.
+  const hrefFor = (lang: string, s?: string) =>
+    pageHref(version, lang, s === landing ? undefined : s);
   const isAvailable = (s: string) => pageExists(root, version, language, s);
 
   // The manual is one tree, and this page's place in it gives the sidebar its
@@ -118,12 +138,12 @@ export default async function Page(props: PageProps) {
   // makes the omission obvious.
   const navOpts = { version, language, currentSlug: page, isAvailable };
   const sideNav = buildSideNav(sidebar, navOpts);
-  const crumbs = nav ? breadcrumbs(nav, page, { version, language }) : [];
+  const crumbs = breadcrumbs(nav, page, { version, language });
   const { prev, next } = prevNext(sidebar, page, navOpts);
   const trail = trailTo(sidebar, page) ?? [];
 
   const frontmatter = frontmatterOf(shared ?? overlay ?? '');
-  const routePath = `/ice/${version}/${language}/${page}`;
+  const routePath = hrefFor(language, page);
   // Cross-page links are resolved against this index at build time, so moving or
   // renaming a page never breaks the links pointing at it. The index holds only
   // the pages this language actually has, so a link is never rewritten to a URL
@@ -131,44 +151,6 @@ export default async function Page(props: PageProps) {
   const { index: pageIndex } = buildPageIndex(
     listPageEntries(root, version, language)
   );
-
-  // Migrated content can contain conversion artifacts; surface a render error on
-  // the page instead of failing the whole build, so we can see what's broken.
-  let content: ReturnType<typeof renderMarkdownString>['content'] | null = null;
-  let renderError: string | null = null;
-  try {
-    const body = resolveDocument({
-      shared: shared ?? '',
-      overlay: overlay ?? undefined,
-      readFile: snippetReader(root, version)
-    });
-    content = renderMarkdownString({
-      source: demoteHeadings(stripRedundantTitle(body, frontmatter.title)),
-      path: routePath,
-      version,
-      language,
-      pageIndex,
-      frontmatter,
-      chrome: {
-        breadcrumbs: crumbs,
-        prev,
-        next,
-        // The property tables are a list of exact identifiers, not an essay, and
-        // are typeset as such. Derived from the page's place in the manual — the
-        // pages under the Property Reference chapter — rather than restated in
-        // the frontmatter of every one of them; a page can still override it.
-        shape:
-          page !== 'property-reference' &&
-          trail.some((n) => n.page === 'property-reference')
-            ? 'property-list'
-            : undefined
-      }
-    }).content;
-  } catch (error) {
-    renderError = error instanceof Error ? error.message : String(error);
-  }
-
-  const landing = nav ? landingSlug(nav) : 'get-started';
 
   // One dropdown entry per supported language. Selecting a language keeps the
   // current page when it exists there, or lands on the same page written for
@@ -196,8 +178,8 @@ export default async function Page(props: PageProps) {
       value: lang,
       label: languageLabel(lang),
       href: equivalent
-        ? `/ice/${version}/${lang}/${equivalent}`
-        : `/ice/${version}/${lang}/${nearest?.page ?? landing}${fellBack}`
+        ? hrefFor(lang, equivalent)
+        : `${hrefFor(lang, nearest?.page)}${fellBack}`
     };
   });
 
@@ -208,17 +190,75 @@ export default async function Page(props: PageProps) {
     const otherLanguage = otherLanguages.includes(language)
       ? language
       : (otherLanguages[0] ?? language);
-    const exists = pageExists(root, other, otherLanguage, page);
+    const kept =
+      page === landing || pageExists(root, other, otherLanguage, page);
     const href = versionSwitchTarget({
       targetVersion: other,
       targetLanguages: otherLanguages,
       currentLanguage: language,
-      slug: page,
-      landing: otherNav ? landingSlug(otherNav) : landing,
+      slug: page === landing ? undefined : page,
       pageExists: (lang, slug) => pageExists(root, other, lang, slug)
     });
-    return { value: other, href: exists ? href : `${href}${fellBack}` };
+    return { value: other, href: kept ? href : `${href}${fellBack}` };
   });
+
+  // The Release Notes chapter's pages, newest first, each with the date its
+  // frontmatter gives. Only the front page lists them, and reading every one
+  // of them for every page would multiply across the page-by-language matrix.
+  const releases =
+    page === landing
+      ? (sidebar.find((n) => n.page === 'release-notes')?.items ?? [])
+          .filter((n) => n.page && isAvailable(n.page))
+          .map((n) => {
+            const sources = readPageSources(root, version, language, n.page!);
+            return {
+              title: n.title,
+              href: pageHref(version, language, n.page!),
+              date: frontmatterOf(sources.shared ?? sources.overlay ?? '').date
+            };
+          })
+      : [];
+
+  // Migrated content can contain conversion artifacts; surface a render error on
+  // the page instead of failing the whole build, so we can see what's broken.
+  let content: ReturnType<typeof renderMarkdownString>['content'] | null = null;
+  let renderError: string | null = null;
+  try {
+    const body = resolveDocument({
+      shared: shared ?? '',
+      overlay: overlay ?? undefined,
+      readFile: snippetReader(root, version)
+    });
+    content = renderMarkdownString({
+      source: demoteHeadings(stripRedundantTitle(body, frontmatter.title)),
+      path: routePath,
+      version,
+      language,
+      pageIndex,
+      frontmatter,
+      chrome: {
+        breadcrumbs: crumbs,
+        prev,
+        next,
+        // For the front page's switches, code showcase, and release list.
+        languageOptions,
+        versionOptions,
+        previousVersions: nav.previousVersions,
+        releases,
+        // The property tables are a list of exact identifiers, not an essay, and
+        // are typeset as such. Derived from the page's place in the manual — the
+        // pages under the Property Reference chapter — rather than restated in
+        // the frontmatter of every one of them; a page can still override it.
+        shape:
+          page !== 'property-reference' &&
+          trail.some((n) => n.page === 'property-reference')
+            ? 'property-list'
+            : undefined
+      }
+    }).content;
+  } catch (error) {
+    renderError = error instanceof Error ? error.message : String(error);
+  }
 
   return (
     <div className="flex grow flex-col">
@@ -228,12 +268,12 @@ export default async function Page(props: PageProps) {
         currentLanguage={language}
         languageOptions={languageOptions}
         versionOptions={versionOptions}
-        previousVersions={nav?.previousVersions}
+        previousVersions={nav.previousVersions}
       />
       <VersionBanner
         version={version}
-        status={nav?.status}
-        latestUrl={nav?.previousVersions?.url}
+        status={nav.status}
+        latestUrl={nav.previousVersions?.url}
       />
       {/* Says so when a version or language switch could not keep the page.
           Keyed by route so the notice belongs to the page the switch landed on
@@ -247,7 +287,11 @@ export default async function Page(props: PageProps) {
       <div className="mt-8 flex grow flex-row justify-center">
         <div className="flex max-w-400 grow flex-row justify-center gap-6 px-6">
           {/* Sidebar: the manual's table of contents. */}
-          <SideNav nodes={sideNav} title={MANUAL_TITLE} />
+          <SideNav
+            nodes={sideNav}
+            title={MANUAL_TITLE}
+            homeHref={hrefFor(language)}
+          />
 
           {/* Content */}
           <div className="grow pb-8">

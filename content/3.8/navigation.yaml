@@ -5,7 +5,7 @@
 # A node marked `language:` is shown only in that language's table of contents.
 version: '3.8'
 status: latest
-landing: get-started
+landing: ice-manual
 languages:
   - cpp
   - csharp

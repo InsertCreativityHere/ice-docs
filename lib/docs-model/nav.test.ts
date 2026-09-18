@@ -12,7 +12,6 @@ import {
   activeTrailKeys,
   containsActive,
   counterpartSlug,
-  landingSlug,
   languageLabel,
   navigationSlugs,
   prevNext,
@@ -178,7 +177,7 @@ test('breadcrumbs trace manual -> chapter -> group -> page, and the page is not 
     crumbs.map((c) => c.title),
     [MANUAL_TITLE, 'The Slice Language', 'User-Defined Types', 'Enumerations']
   );
-  assert.equal(crumbs[0].href, '/ice/3.8/cpp/get-started');
+  assert.equal(crumbs[0].href, '/ice/3.8/cpp');
   assert.equal(crumbs[1].href, '/ice/3.8/cpp/the-slice-language');
   assert.equal(crumbs[2].href, '/ice/3.8/cpp/user-defined-types');
   assert.equal(crumbs[3].href, undefined); // current page
@@ -190,14 +189,6 @@ test('a group without a page of its own is a plain-text crumb', () => {
     language: 'cpp'
   });
   assert.deepEqual(crumbs[1], { title: 'Plugins' });
-});
-
-test("the manual's front page never links to itself from its own trail", () => {
-  const crumbs = breadcrumbs(NAV, 'get-started', {
-    version: '3.8',
-    language: 'cpp'
-  });
-  assert.deepEqual(crumbs, [{ title: MANUAL_TITLE }, { title: 'Get Started' }]);
 });
 
 test('a page outside the tree gets no trail', () => {
@@ -235,6 +226,13 @@ test('prevNext never crosses into another language', () => {
   assert.equal(next?.href, '/ice/3.8/python/python-plug-in-api');
 });
 
+test('navigationSlugs counts a landing page outside the tree as reachable', () => {
+  assert.deepEqual(
+    navigationSlugs({ landing: 'front-page', sidebar: SIDEBAR }).slice(0, 2),
+    ['front-page', 'get-started']
+  );
+});
+
 test('navigationSlugs lists every declared page in reading order', () => {
   assert.deepEqual(navigationSlugs(NAV), [
     'get-started',
@@ -256,22 +254,12 @@ test('languageLabel maps slugs to display names, falling back to the slug', () =
   assert.equal(languageLabel('unknown'), 'unknown');
 });
 
-test('landingSlug prefers explicit landing, else the first page, else get-started', () => {
-  assert.equal(landingSlug(NAV), 'get-started');
-  assert.equal(
-    landingSlug({ sidebar: SIDEBAR.slice(1) }),
-    'the-slice-language'
-  );
-  assert.equal(landingSlug({ sidebar: [] }), 'get-started');
-});
-
 test('versionSwitchTarget keeps language + page when available', () => {
   const href = versionSwitchTarget({
     targetVersion: '3.7',
     targetLanguages: ['cpp', 'python'],
     currentLanguage: 'python',
     slug: 'enumerations',
-    landing: 'get-started',
     pageExists: () => true
   });
   assert.equal(href, '/ice/3.7/python/enumerations');
@@ -284,7 +272,6 @@ test('versionSwitchTarget falls back on language then on landing', () => {
     targetLanguages: ['cpp', 'python'],
     currentLanguage: 'java',
     slug: 'enumerations',
-    landing: 'get-started',
     pageExists: (l, s) => l === 'cpp' && s === 'enumerations'
   });
   assert.equal(lang, '/ice/3.7/cpp/enumerations');
@@ -295,10 +282,9 @@ test('versionSwitchTarget falls back on language then on landing', () => {
     targetLanguages: ['cpp', 'python'],
     currentLanguage: 'cpp',
     slug: 'communicator',
-    landing: 'get-started',
     pageExists: () => false
   });
-  assert.equal(missing, '/ice/3.7/cpp/get-started');
+  assert.equal(missing, '/ice/3.7/cpp');
 });
 
 test('activeTrailKeys names every group down to the current page, and nothing else', () => {

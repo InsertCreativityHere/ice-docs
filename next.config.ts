@@ -3,15 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { load as yamlLoad } from 'js-yaml';
 
-interface NavNode {
-  page?: string;
-  items?: NavNode[];
-}
-
 interface Nav {
   languages?: string[];
-  landing?: string;
-  sidebar?: NavNode[];
 }
 
 interface RedirectRule {
@@ -36,39 +29,29 @@ function readYaml<T>(file: string): T | null {
     : null;
 }
 
-// Mirrors landingSlug() in lib/docs-model/nav.ts: the explicit landing, else the
-// first page in the table of contents. Kept in sync by hand because
-// next.config.ts cannot import from the TypeScript app graph.
-function firstPage(nodes: NavNode[] = []): string | undefined {
-  for (const node of nodes) {
-    if (node.page) return node.page;
-    const nested = firstPage(node.items);
-    if (nested) return nested;
-  }
-  return undefined;
-}
-
-function landingSlug(nav: Nav): string {
-  return nav.landing ?? firstPage(nav.sidebar) ?? 'get-started';
-}
-
-// Build redirects from the content manifests: a bare /ice/<version>/<language>
-// lands on the version's landing page, plus each version's redirects.yaml.
+// Build redirects from the content manifests: the site root, a bare /ice, and a
+// bare /ice/<version> land on a version's landing page, which is served at
+// /ice/<version>/<language> (the newest version's, in its first language, when
+// they name no version), plus each version's redirects.yaml.
 function buildRedirects(): RedirectRule[] {
   const root = path.join(process.cwd(), 'content');
   const rules: RedirectRule[] = [];
+  const versions = contentVersions(root).sort((a, b) =>
+    a.localeCompare(b, undefined, { numeric: true })
+  );
 
-  for (const version of contentVersions(root)) {
+  for (const version of versions) {
     const nav = readYaml<Nav>(path.join(root, version, 'navigation.yaml'));
     if (!nav) continue;
 
-    const landing = landingSlug(nav);
-    for (const language of nav.languages ?? []) {
-      rules.push({
-        source: `/ice/${version}/${language}`,
-        destination: `/ice/${version}/${language}/${landing}`,
-        permanent: false
-      });
+    const language = nav.languages?.[0];
+    if (language) {
+      const destination = `/ice/${version}/${language}`;
+      rules.push({ source: `/ice/${version}`, destination, permanent: false });
+      if (version === versions[versions.length - 1]) {
+        rules.push({ source: '/', destination, permanent: false });
+        rules.push({ source: '/ice', destination, permanent: false });
+      }
     }
 
     const manifest = readYaml<{
