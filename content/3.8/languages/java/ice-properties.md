@@ -256,14 +256,6 @@ return. After that, a server will typically do some clean-up work before exiting
 the server will not shut down automatically. This property is often used for servers that are automatically
 [activated by IceGrid](../icegrid-server-activation).
 
-{% callout type="info" %}
-
-For C# applications and Windows C++ applications, the server idle time takes effect only once all the server thread pool
-idle threads have been reaped (the thread idle time can be configured with the
-[ThreadIdleTime](../ice-threadpool-properties) thread pool property.
-
-{% /callout %}
-
 # Ice.SliceLoader.NotFoundCacheSize
 
 #### Synopsis
@@ -355,12 +347,6 @@ The default value is `LOG_USER`.
 `value` specifies a thread priority. Threads created by the Ice runtime are created with the specified priority by
 default. Leaving this property unset causes the runtime to create threads with the system default priority. This
 property is unset by default.
-
-#### C\#
-
-`value` can be `Lowest`, `BelowNormal`, `Normal`, `AboveNormal`, or `Highest`.
-
-#### Java
 
 `value` can be `MIN_PRIORITY`, `NORM_PRIORITY`, `MAX_PRIORITY`, or an integer between `1` and `10`.
 
