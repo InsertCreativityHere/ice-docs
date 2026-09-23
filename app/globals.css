@@ -342,6 +342,10 @@
    are allowed the full column so a wide sample does not have to scroll.
    --------------------------------------------------------------------------- */
 @layer components {
+  .doc-body {
+    min-width: 0;
+  }
+
   .doc-body > * {
     max-width: var(--measure);
   }
@@ -354,6 +358,11 @@
      the wide track too, so its text, switches, and panels share one edge. */
   [data-page-shape='wide'] .doc-body > * {
     max-width: var(--measure-wide);
+  }
+
+  main article img.figure[src$='.svg'] {
+    max-width: 100%;
+    height: auto;
   }
 
   main article h1 {
