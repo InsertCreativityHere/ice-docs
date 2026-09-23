@@ -4,6 +4,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { useLanguage } from '@/context/state';
+
 interface Record {
   /** Title */
   t: string;
@@ -15,33 +17,30 @@ interface Record {
   k: string;
   /** Href */
   h: string;
-  /** Heading keywords */
+  /** Heading keywords of the shared text */
   x: string;
+  /** Heading keywords of each mapping's own text */
+  l: { [language: string]: string };
+  /** The languages the page is written for; every language when absent. */
+  w?: string[];
 }
 
-interface SearchProps {
-  version: string;
-  language: string;
-}
-
-// A manual this size is unusable without search. The index is per (version,
-// language) and fetched the first time the palette opens, so a reader never
-// downloads the eight language mappings they are not reading.
-export function Search({ version, language }: SearchProps) {
+// A manual this size is unusable without search. The index is per version and
+// fetched the first time the palette opens.
+export function Search({ version }: { version: string }) {
   const router = useRouter();
+  const language = useLanguage();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const opener = useRef<HTMLElement | null>(null);
 
-  // The index is per version+language, so it is cached under that key rather
-  // than cleared when either changes.
-  const indexKey = `${version}/${language}`;
+  // Cached under its version, rather than cleared when the version changes.
   const [index, setIndex] = useState<{ key: string; pages: Record[] } | null>(
     null
   );
-  const records = index?.key === indexKey ? index.pages : null;
+  const records = index?.key === version ? index.pages : null;
 
   // ⌘K / Ctrl-K from anywhere, Escape to leave.
   useEffect(() => {
@@ -50,6 +49,7 @@ export function Search({ version, language }: SearchProps) {
         event.preventDefault();
         opener.current = document.activeElement as HTMLElement;
         setOpen((was) => !was);
+        setSelected(0);
       } else if (event.key === 'Escape') {
         setOpen(false);
       }
@@ -65,24 +65,29 @@ export function Search({ version, language }: SearchProps) {
     }
     inputRef.current?.focus();
     if (records) return;
-    fetch(`/search/${indexKey}.json`)
-      .then((response) => (response.ok ? response.json() : { pages: [] }))
-      .then((data) => setIndex({ key: indexKey, pages: data.pages ?? [] }))
-      .catch(() => setIndex({ key: indexKey, pages: [] }));
-  }, [open, records, indexKey]);
+    fetch(`/search/${version}.json`)
+      .then((response) => response.json())
+      .then((data) => setIndex({ key: version, pages: data.pages }))
+      .catch(() => setIndex({ key: version, pages: [] }));
+  }, [open, records, version]);
 
   const results = useMemo(() => {
     const needle = query.trim().toLowerCase();
     if (!needle || !records) return [];
     const scored = [];
     for (const record of records) {
+      // The sidebar hides these pages from the reader; so does search.
+      if (record.w && !record.w.includes(language)) continue;
       const title = record.t.toLowerCase();
       // Rank by where the match is: a title beats a heading beats prose.
       let score = 0;
       if (title === needle) score = 100;
       else if (title.startsWith(needle)) score = 80;
       else if (title.includes(needle)) score = 60;
-      else if (record.x.toLowerCase().includes(needle)) score = 40;
+      else if (
+        `${record.x} ${record.l[language] ?? ''}`.toLowerCase().includes(needle)
+      )
+        score = 40;
       else if (record.c.toLowerCase().includes(needle)) score = 25;
       else if (record.d.toLowerCase().includes(needle)) score = 20;
       if (score) scored.push({ record, score });
@@ -91,7 +96,7 @@ export function Search({ version, language }: SearchProps) {
       .sort((a, b) => b.score - a.score || a.record.t.localeCompare(b.record.t))
       .slice(0, 25)
       .map((entry) => entry.record);
-  }, [query, records]);
+  }, [query, records, language]);
 
   const go = useCallback(
     (record?: Record) => {
@@ -110,6 +115,8 @@ export function Search({ version, language }: SearchProps) {
         onClick={(event) => {
           opener.current = event.currentTarget;
           setOpen(true);
+          // The results may have changed with the mapping since it closed.
+          setSelected(0);
         }}
         className="flex shrink-0 items-center gap-2 rounded-md border border-black/15 px-2 py-1 text-sm opacity-70 hover:opacity-100 lg:px-3 dark:border-white/20"
       >

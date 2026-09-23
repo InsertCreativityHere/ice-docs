@@ -4,47 +4,30 @@
 //
 //   node scripts/build-search-index.mjs
 //
-// One JSON file per (version, language) under `public/search/`, so the browser
-// only ever downloads the manual the reader is actually in — a C++ reader never
-// pays for the eight other language mappings. Runs from `prebuild`/`predev`; the
-// output is generated, and git-ignored.
+// One JSON file per version under `public/search/`. Runs from
+// `prebuild`/`predev`; the output is generated, and git-ignored.
 //
-// A record is one page. Its headings are folded into a keyword blob rather than
+// A record is one page. Its headings are folded into keyword blobs rather than
 // becoming records of their own: it keeps the index small while still matching
-// the thing readers actually search for (`Ice.Default.Locator`, `AMI`).
+// the thing readers actually search for (`Ice.Default.Locator`, `AMI`). The
+// shared text's headings match for every reader, and each mapping's own match
+// only for that mapping's readers, who are the only ones to see them.
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { load as yamlLoad } from 'js-yaml';
 
 import {
   listVersions,
   listPages,
-  readNavigationYaml
+  readNavigation,
+  readPageSources,
+  writtenFor
 } from '../lib/docs-model/content.ts';
 import { pageHref, trailTo } from '../lib/docs-model/nav.ts';
-import { FRONTMATTER_RE, splitLines } from '../lib/docs-model/resolve.ts';
+import { splitFrontmatter, splitLines } from '../lib/docs-model/resolve.ts';
 
 const ROOT = path.join(process.cwd(), 'content', 'ice');
 const OUT = path.join(process.cwd(), 'public', 'search');
-
-/** Frontmatter fields plus the body, without pulling in a YAML parse per page. */
-function readPage(file) {
-  if (!file) return null;
-  const source = fs.readFileSync(file, 'utf8');
-  const m = FRONTMATTER_RE.exec(source);
-  const frontmatter = m ? m[1] : '';
-  const field = (name) => {
-    const found = new RegExp(`^${name}:\\s*(.+)$`, 'm').exec(frontmatter);
-    return found ? found[1].trim().replace(/^["']|["']$/g, '') : undefined;
-  };
-  return {
-    title: field('title'),
-    description: field('description'),
-    type: field('type'),
-    body: m ? source.slice(m[0].length) : source
-  };
-}
 
 /** Heading text in a markdown body, skipping fenced code. */
 function headings(body) {
@@ -86,42 +69,41 @@ function crumbFor(nav, page) {
 
 let files = 0;
 fs.rmSync(OUT, { recursive: true, force: true });
+fs.mkdirSync(OUT, { recursive: true });
 
 for (const version of listVersions(ROOT)) {
-  const nav = yamlLoad(readNavigationYaml(ROOT, version) ?? '');
-  if (!nav) continue;
+  const nav = readNavigation(ROOT, version);
 
-  const pages = listPages(ROOT, version);
-  for (const language of nav.languages ?? []) {
-    const records = [];
-    for (const page of pages) {
-      const shared = readPage(page.shared);
-      const overlay = readPage(page.overlays[language]);
-      if (!shared && !overlay) continue; // not part of this language's manual
-
-      const fm = shared ?? overlay;
-      const body = `${shared?.body ?? ''}\n${overlay?.body ?? ''}`;
-      records.push({
-        t: fm.title ?? page.name,
-        d: fm.description ?? '',
-        c: crumbFor(nav, page.name),
-        k: fm.type ?? '',
-        h: pageHref(version, language, page.slug),
-        // De-duplicated headings, capped: enough to match on, small enough to ship.
-        x: [...new Set(headings(body))].slice(0, 40).join(' · ')
-      });
-    }
-
-    const file = path.join(OUT, version, `${language}.json`);
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(
-      file,
-      JSON.stringify({ version, language, pages: records })
+  const records = [];
+  for (const page of listPages(ROOT, version)) {
+    const { shared, overlays, frontmatter } = readPageSources(page);
+    const common = new Set(
+      headings(shared ? splitFrontmatter(shared).body : '')
     );
-    files++;
-    const kb = Math.round(fs.statSync(file).size / 1024);
-    console.log(`  ${version}/${language}: ${records.length} pages (${kb} kB)`);
+    records.push({
+      t: frontmatter.title,
+      d: frontmatter.description ?? '',
+      c: crumbFor(nav, page.name),
+      k: frontmatter.type ?? '',
+      h: pageHref(version, page.slug),
+      x: [...common].join(' · '),
+      l: Object.fromEntries(
+        Object.entries(overlays).map(([language, source]) => [
+          language,
+          [...new Set(headings(splitFrontmatter(source).body))]
+            .filter((heading) => !common.has(heading))
+            .join(' · ')
+        ])
+      ),
+      w: writtenFor(page)
+    });
   }
+
+  const file = path.join(OUT, `${version}.json`);
+  fs.writeFileSync(file, JSON.stringify({ version, pages: records }));
+  files++;
+  const kb = Math.round(fs.statSync(file).size / 1024);
+  console.log(`  ${version}: ${records.length} pages (${kb} kB)`);
 }
 
 console.log(`search index: ${files} file(s) under public/search`);
