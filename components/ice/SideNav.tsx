@@ -225,7 +225,7 @@ function Tree({
                   aria-expanded={isOpen}
                   className="flex flex-1 items-start text-left"
                 >
-                  <span className="text-ink-muted mt-1.5 flex h-5 w-5 shrink-0 items-center justify-center">
+                  <span className="mt-1.5 flex h-5 w-5 shrink-0 items-center justify-center text-ink-muted">
                     {chevron}
                   </span>
                   <span className={label}>{node.title}</span>
