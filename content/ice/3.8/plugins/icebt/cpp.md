@@ -54,7 +54,7 @@ An application must implement a callback function pass it to `startDiscovery`:
 #include <IceBT/IceBT.h>
 ...
 
-CommunicatorPtr communicator = ...
+CommunicatorPtr communicator = ...;
 auto plugin = communicator->getPluginManager()->getPlugin("IceBT");
 auto btplugin = dynamic_pointer_cast<IceBT::Plugin>(plugin);
 btplugin->startDiscovery(

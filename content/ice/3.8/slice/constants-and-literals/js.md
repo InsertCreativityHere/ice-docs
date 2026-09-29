@@ -30,7 +30,7 @@ Object.defineProperty(Example, 'FavoriteFruit', {value: Fruit.Pear});
 
 The corresponding TypeScript declarations are:
 
-```js
+```typescript
 const AppendByDefault:boolean;
 const LowerNibble:number;
 const Advice:string;
@@ -52,7 +52,7 @@ is mapped to:
 
 ```js
 Object.defineProperty(Example, 'Egg', {value: "\u0153uf"});
-Object.defineProperty(Example 'Heart', {value: "c\u0153ur"});
+Object.defineProperty(Example, 'Heart', {value: "c\u0153ur"});
 Object.defineProperty(Example, 'Banana', {value: "\ud83c\udf4c"});
 ```
 

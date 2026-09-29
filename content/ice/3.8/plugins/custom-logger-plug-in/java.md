@@ -30,12 +30,12 @@ package com.example.clearsky;
 
 public class CustomLoggerPluginFactory implements PluginFactory {
     @Override
-    public String getPluginName {
+    public String getPluginName() {
         return "CustomLogger";
     }
 
     @Override
-    public Plugin create(Communicator communicator, string name, string[] args) {
+    public Plugin create(Communicator communicator, String name, String[] args) {
         return new LoggerPlugin(communicator, new CustomLogger());
     }
 }
