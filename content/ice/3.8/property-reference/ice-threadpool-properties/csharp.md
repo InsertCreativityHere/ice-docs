@@ -35,6 +35,8 @@ This property is unset by default.
 
 `value` can be `Lowest`, `BelowNormal`, `Normal`, `AboveNormal`, or `Highest`.
 
+The named values can also include the `ThreadPriority.` prefix, for example `ThreadPriority.AboveNormal`.
+
 You can also override the default priority for a specific object adapter using
 [_adapter_.ThreadPool.ThreadPriority](../object-adapter-properties).
 

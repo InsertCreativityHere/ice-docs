@@ -35,6 +35,8 @@ This property is unset by default.
 
 `value` can be `MIN_PRIORITY`, `NORM_PRIORITY`, `MAX_PRIORITY`, or an integer between `1` and `10`.
 
+The named values can also include the `java.lang.Thread.` prefix, for example `java.lang.Thread.NORM_PRIORITY`.
+
 You can also override the default priority for a specific object adapter using
 [_adapter_.ThreadPool.ThreadPriority](../object-adapter-properties).
 

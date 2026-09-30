@@ -297,6 +297,8 @@ property is unset by default.
 
 `value` can be `Lowest`, `BelowNormal`, `Normal`, `AboveNormal`, or `Highest`.
 
+The named values can also include the `ThreadPriority.` prefix, for example `ThreadPriority.AboveNormal`.
+
 You can separately override the default priorities for the client and server thread pools using
 [Ice.ThreadPool._name_.ThreadPriority](../ice-threadpool-properties#ice.threadpool.name.threadpriority) as well as for a
 specific object adapter using [_adapter_.ThreadPool.ThreadPriority](../object-adapter-properties).

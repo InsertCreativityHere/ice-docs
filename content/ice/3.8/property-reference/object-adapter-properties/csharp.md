@@ -31,14 +31,15 @@ scheme is `http` or `https` and host is a DNS name or IP address. The scheme and
 the default port for the scheme (80 for http, 443 for https) is omitted during comparison, so `https://web.example.com`
 and `https://web.example.com:443` match the same origin.
 
-The literal value `*` allows any origin. The default value (empty) disables the check entirely.
+The default value (empty) disables the check. A `*` entry also disables it, whatever the other entries are. Ice reads
+this property when creating an adapter with WebSocket endpoints.
 
-When this property is set to a non-empty value other than `*`, each incoming WebSocket upgrade request is checked as
-follows:
+When the check is enabled, Ice checks each incoming WebSocket upgrade request as follows:
 
 If the request has no Origin header, the upgrade is accepted. Browsers always send Origin; non-browser Ice clients do
 not, so the check only filters browser-originated traffic. If the request has an Origin header that canonicalizes to an
-entry in the list, the upgrade is accepted. Otherwise the upgrade is rejected and the connection is closed.
+entry in the list, the upgrade is accepted. An unlisted or malformed origin causes Ice to reject the upgrade and close
+the connection.
 
 This property is intended to mitigate cross-site WebSocket hijacking against browser-based Ice clients (Ice for
 JavaScript). Non-browser Ice clients are unaffected.
@@ -143,23 +144,26 @@ As a proxy property, you can configure additional [aspects of the proxy](../prox
 
 ### Description
 
-When `num` is greater than `0`, this object adapter accepts a maximum of `num` incoming connections. Once the limit is
-reached, an incoming connection must be closed before this object adapter accepts a new incoming connection.
+When `num` is greater than `0`, Ice limits the number of incoming connections separately for each listening endpoint of
+this object adapter. Once an endpoint reaches the limit, Ice accepts and immediately closes additional connections to
+that endpoint until an existing connection closes. UDP endpoints are exempt from this limit.
 
-The limit is infinite when `num` is `0` or less.
-
-The default value for max connections is `0`.
+The default value is `0`. A value of `0` or less disables the limit.
 
 ## _adapter_.MessageSizeMax
 
 ### Synopsis
 
-`adapter.MessageSizeMax=num`
+`adapter.MessageSizeMax=num` (in KiB)
 
 ### Description
 
-Overrides the setting of [Ice.MessageSizeMax](../ice-properties) to limit the size of messages that can be received by
-this object adapter. If not defined, the adapter uses the value of `Ice.MessageSizeMax`.
+Limits the size of the Ice protocol messages this adapter receives, in KiB (1024 bytes). The limit applies to the whole
+message, including the protocol header; for a compressed message, it applies to the decompressed size. If not defined,
+the adapter uses the communicator's [Ice.MessageSizeMax](../ice-properties) limit.
+
+A value of `0` or less selects the maximum supported size of 2,147,483,647 bytes. A positive value must be at most
+2,097,151 KiB.
 
 This property is logically a connection property, and only applies to messages received over network connections created
 by this object adapter.
@@ -240,9 +244,12 @@ can also be configured with its own [thread pool](../threading-model). This is u
 thread starvation by ensuring that a minimum number of threads is available for dispatching requests to certain Ice
 objects.
 
-`num` is the initial number of threads in the thread pool. The default value is 0, meaning that an object adapter by
-default uses the communicator's server thread pool. See [Ice.ThreadPool._name_.Size](../ice-threadpool-properties) for
-more information.
+The adapter uses the communicator's server thread pool when no `adapter.ThreadPool.*` property is set. Setting any
+property with this prefix creates a dedicated pool. For example, setting only `adapter.ThreadPool.SizeMax=4` creates a
+pool with one initial thread and a maximum of four threads.
+
+`num` is the initial number of threads in the dedicated pool. Its default value is `1`. See
+[Ice.ThreadPool._name_.Size](../ice-threadpool-properties) for more information.
 
 ## _adapter_.ThreadPool.SizeMax
 
@@ -302,9 +309,10 @@ this property to 0 disables idle thread reaping. If not specified, the default v
 
 `value` specifies a thread priority for the object adapter's [thread pool](../threading-model). The object adapter
 creates its threads with the specified priority. Leaving this property unset causes the adapter to create threads with
-the priority specified by [Ice.ThreadPool.Server.ThreadPriority](../ice-threadpool-properties) or, if that property is
-unset, the priority specified by [Ice.ThreadPriority](../ice-properties).
+the priority specified by [Ice.ThreadPriority](../ice-properties).
 
 `value` can be `Lowest`, `BelowNormal`, `Normal`, `AboveNormal`, or `Highest`.
+
+The named values can also include the `ThreadPriority.` prefix, for example `ThreadPriority.AboveNormal`.
 
 {% /language-section %}

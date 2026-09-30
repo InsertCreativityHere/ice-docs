@@ -63,7 +63,8 @@ Defining this property is equivalent to invoking the `ice_endpointSelection` pro
 
 ### Description
 
-Specifies the [invocation timeout](../invocation-timeouts) of this proxy, in milliseconds. Defining this property is
+Specifies the [invocation timeout](../invocation-timeouts) of this proxy, in milliseconds. The default is
+[Ice.Default.InvocationTimeout](../ice-default-properties#ice.default.invocationtimeout). Defining this property is
 equivalent to invoking the `ice_invocationTimeout` proxy method.
 
 ## _name_.Locator
@@ -93,8 +94,9 @@ MyProxy.Locator.EndpointSelection=Ordered
 
 ### Description
 
-Specifies the [locator cache](../locator-semantics-for-clients) timeout of this proxy, in seconds. Defining this
-property is equivalent to invoking the `ice_locatorCacheTimeout` proxy method.
+Specifies the [locator cache](../locator-semantics-for-clients) timeout of this proxy, in seconds. The default is
+[Ice.Default.LocatorCacheTimeout](../ice-default-properties#ice.default.locatorcachetimeout). A value of 0 disables
+caching. A negative value means cache entries never expire.
 
 ## _name_.Router
 

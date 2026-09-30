@@ -79,10 +79,10 @@ configuring the size of a thread pool.
 The default value for `SizeMax` is the value of `Size`, meaning the thread pool can never grow larger than its initial
 size.
 
-{% iflang langs="cpp,python,ruby,php,matlab,swift" %}
+{% iflang langs="cpp,java,python,ruby,php,matlab,swift" %}
 
-Setting `SizeMax` to `-1` uses the number of processors available to the runtime. If this is less than `Size`, Ice uses
-`Size` as the maximum.
+Setting `SizeMax` to `-1` sets the maximum to the larger of `Size` and the number of processors available to the
+runtime.
 
 {% /iflang %}
 
