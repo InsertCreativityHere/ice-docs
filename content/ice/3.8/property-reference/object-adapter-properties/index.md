@@ -13,11 +13,11 @@ Replace the `adapter` prefix with `Ice.Admin`, for example `Ice.Admin.ThreadPool
 
 ## _adapter_.AdapterId
 
-### Synopsis
+### Synopsis {% id="adapter.adapterid-synopsis" %}
 
 `adapter.AdapterId=id`
 
-### Description
+### Description {% id="adapter.adapterid-description" %}
 
 Assigns an adapter ID to this object adapter. An object adapter with an adapter ID is called an _indirect adapter_.
 
@@ -28,11 +28,11 @@ upon activation.
 
 ## _adapter_.AllowedOrigins
 
-### Synopsis
+### Synopsis {% id="adapter.allowedorigins-synopsis" %}
 
 `adapter.AllowedOrigins=originList`
 
-### Description
+### Description {% id="adapter.allowedorigins-description" %}
 
 Restricts which HTTP Origin headers are accepted on the WebSocket upgrade request received by this object adapter. This
 property has effect only for adapters with WebSocket endpoints (`ws` or `wss`).
@@ -55,7 +55,7 @@ the connection.
 This property is intended to mitigate cross-site WebSocket hijacking against browser-based Ice clients (Ice for
 JavaScript). Non-browser Ice clients are unaffected.
 
-### Example
+### Example {% id="adapter.allowedorigins-example" %}
 
 ```config
 MyAdapter.Endpoints=wss -h api.example.com -p 443
@@ -64,83 +64,83 @@ MyAdapter.AllowedOrigins=https://web.example.com, https://admin.example.com
 
 ## _adapter_.Connection.CloseTimeout
 
-### Synopsis
+### Synopsis {% id="adapter.connection.closetimeout-synopsis" %}
 
 `adapter.Connection.CloseTimeout=num` (in seconds)
 
-### Description
+### Description {% id="adapter.connection.closetimeout-description" %}
 
 Overrides the setting of [Ice.Connection.Server.CloseTimeout](../ice-connection-properties) for this object adapter.
 
 ## _adapter_.Connection.ConnectTimeout
 
-### Synopsis
+### Synopsis {% id="adapter.connection.connecttimeout-synopsis" %}
 
 `adapter.Connection.ConnectTimeout=num` (in seconds)
 
-### Description
+### Description {% id="adapter.connection.connecttimeout-description" %}
 
 Overrides the setting of [Ice.Connection.Server.ConnectTimeout](../ice-connection-properties) for this object adapter.
 
 ## _adapter_.Connection.EnableIdleCheck
 
-### Synopsis
+### Synopsis {% id="adapter.connection.enableidlecheck-synopsis" %}
 
 `adapter.Connection.EnableIdleCheck=num`
 
-### Description
+### Description {% id="adapter.connection.enableidlecheck-description" %}
 
 Overrides the setting of [Ice.Connection.Server.EnableIdleCheck](../ice-connection-properties) for this object adapter.
 
 ## _adapter_.Connection.IdleTimeout
 
-### Synopsis
+### Synopsis {% id="adapter.connection.idletimeout-synopsis" %}
 
 `adapter.Connection.IdleTimeout=num` (in seconds)
 
-### Description
+### Description {% id="adapter.connection.idletimeout-description" %}
 
 Overrides the setting of [Ice.Connection.Server.IdleTimeout](../ice-connection-properties) for this object adapter.
 
 ## _adapter_.Connection.InactivityTimeout
 
-### Synopsis
+### Synopsis {% id="adapter.connection.inactivitytimeout-synopsis" %}
 
 `adapter.Connection.InactivityTimeout=num` (in seconds)
 
-### Description
+### Description {% id="adapter.connection.inactivitytimeout-description" %}
 
 Overrides the setting of [Ice.Connection.Server.InactivityTimeout](../ice-connection-properties) for this object
 adapter.
 
 ## _adapter_.Connection.MaxDispatches
 
-### Synopsis
+### Synopsis {% id="adapter.connection.maxdispatches-synopsis" %}
 
 `adapter.Connection.MaxDispatches=num`
 
-### Description
+### Description {% id="adapter.connection.maxdispatches-description" %}
 
 Overrides the setting of [Ice.Connection.Server.MaxDispatches](../ice-connection-properties) for this object adapter.
 
 ## _adapter_.Endpoints
 
-### Synopsis
+### Synopsis {% id="adapter.endpoints-synopsis" %}
 
 `adapter.Endpoints=endpoints`
 
-### Description
+### Description {% id="adapter.endpoints-description" %}
 
 Sets the [physical endpoints](../object-adapter-endpoints) of this object adapter. These endpoints correspond to the
 network interfaces on which the object adapter accepts connections and receives requests.
 
 ## _adapter_.Locator
 
-### Synopsis
+### Synopsis {% id="adapter.locator-synopsis" %}
 
 `adapter.Locator=locator`
 
-### Description
+### Description {% id="adapter.locator-description" %}
 
 Specifies the [locator](../locators) of this object adapter. The value is a stringified proxy to an `Ice::Locator`
 object.
@@ -149,11 +149,11 @@ As a proxy property, you can configure additional [aspects of the proxy](../prox
 
 ## _adapter_.MaxConnections
 
-### Synopsis
+### Synopsis {% id="adapter.maxconnections-synopsis" %}
 
 `adapter.MaxConnections=num`
 
-### Description
+### Description {% id="adapter.maxconnections-description" %}
 
 When `num` is greater than `0`, Ice limits the number of incoming connections separately for each listening endpoint of
 this object adapter. Once an endpoint reaches the limit, Ice accepts and immediately closes additional connections to
@@ -163,11 +163,11 @@ The default value is `0`. A value of `0` or less disables the limit.
 
 ## _adapter_.MessageSizeMax
 
-### Synopsis
+### Synopsis {% id="adapter.messagesizemax-synopsis" %}
 
 `adapter.MessageSizeMax=num` (in KiB)
 
-### Description
+### Description {% id="adapter.messagesizemax-description" %}
 
 Limits the size of the Ice protocol messages this adapter receives, in KiB (1024 bytes). The limit applies to the whole
 message, including the protocol header; for a compressed message, it applies to the decompressed size. If not defined,
@@ -185,11 +185,11 @@ by this object adapter.
 
 ## _adapter_.ProxyOptions
 
-### Synopsis
+### Synopsis {% id="adapter.proxyoptions-synopsis" %}
 
 `adapter.ProxyOptions=options`
 
-### Description
+### Description {% id="adapter.proxyoptions-description" %}
 
 Specifies the proxy options for proxies created by the object adapter. The value is a string representing the proxy
 options as they would be specified in a [stringified proxy](../syntax-for-stringified-proxies). The default value is
@@ -197,11 +197,11 @@ options as they would be specified in a [stringified proxy](../syntax-for-string
 
 ## _adapter_.PublishedEndpoints
 
-### Synopsis
+### Synopsis {% id="adapter.publishedendpoints-synopsis" %}
 
 `adapter.PublishedEndpoints=endpoints`
 
-### Description
+### Description {% id="adapter.publishedendpoints-description" %}
 
 The published endpoints of an object adapter can be set using `adapter.PublishedEndpoints`. The exact algorithm is
 described in [Published Object Adapter Endpoints](../object-adapter-endpoints).
@@ -210,11 +210,11 @@ described in [Published Object Adapter Endpoints](../object-adapter-endpoints).
 
 ## _adapter_.PublishedHost
 
-### Synopsis
+### Synopsis {% id="adapter.publishedhost-synopsis" %}
 
 `adapter.PublishedHost=host`
 
-### Description
+### Description {% id="adapter.publishedhost-description" %}
 
 Specifies the published host for this object adapter. A published host is usually a DNS name, but it can also be an IP
 address.
@@ -225,11 +225,11 @@ property is particularly useful when the object adapter endpoints do not specify
 
 ## _adapter_.ReplicaGroupId
 
-### Synopsis
+### Synopsis {% id="adapter.replicagroupid-synopsis" %}
 
 `adapter.ReplicaGroupId=id`
 
-### Description
+### Description {% id="adapter.replicagroupid-description" %}
 
 Identifies the group of [replicated object adapters](../object-adapter-replication) to which this adapter belongs. The
 replica group is treated as a virtual object adapter, so that an indirect proxy of the form `identity@id` refers to the
@@ -252,11 +252,11 @@ replicated, it can always be addressed individually in an indirect proxy if it d
 
 ## _adapter_.Router
 
-### Synopsis
+### Synopsis {% id="adapter.router-synopsis" %}
 
 `adapter.Router=router`
 
-### Description
+### Description {% id="adapter.router-description" %}
 
 Specifies a [router](../glacier2) for this object adapter. The value is a stringified proxy to an `Ice::Router` object.
 Defining a router allows the object adapter to receive callbacks from the router over a
@@ -277,11 +277,11 @@ As a proxy property, you can configure additional [aspects of the proxy](../prox
 
 ## _adapter_.ThreadPool.Serialize
 
-### Synopsis
+### Synopsis {% id="adapter.threadpool.serialize-synopsis" %}
 
 `adapter.ThreadPool.Serialize=num`
 
-### Description
+### Description {% id="adapter.threadpool.serialize-description" %}
 
 If `num` is a value greater than 0, the adapter's thread pool serializes all messages from each connection. It is not
 necessary to enable this feature in a thread pool whose maximum size is 1 thread. When a thread pool dispatches requests
@@ -294,11 +294,11 @@ significant impact on latency and throughput. If not defined, the default value 
 
 ## _adapter_.ThreadPool.Size
 
-### Synopsis
+### Synopsis {% id="adapter.threadpool.size-synopsis" %}
 
 `adapter.ThreadPool.Size=num`
 
-### Description
+### Description {% id="adapter.threadpool.size-description" %}
 
 A communicator creates a default server thread pool that dispatches requests to its object adapters. An object adapter
 can also be configured with its own [thread pool](../threading-model). This is useful in avoiding deadlocks due to
@@ -314,11 +314,11 @@ pool with one initial thread and a maximum of four threads.
 
 ## _adapter_.ThreadPool.SizeMax
 
-### Synopsis
+### Synopsis {% id="adapter.threadpool.sizemax-synopsis" %}
 
 `adapter.ThreadPool.SizeMax=num`
 
-### Description
+### Description {% id="adapter.threadpool.sizemax-description" %}
 
 `num` is the maximum number of threads for the [thread pool](../threading-model). See
 [Ice.ThreadPool._name_.SizeMax](../ice-threadpool-properties) for more information.
@@ -328,22 +328,22 @@ meaning the thread pool can never grow larger than its initial size.
 
 ## _adapter_.ThreadPool.SizeWarn
 
-### Synopsis
+### Synopsis {% id="adapter.threadpool.sizewarn-synopsis" %}
 
 `adapter.ThreadPool.SizeWarn=num`
 
-### Description
+### Description {% id="adapter.threadpool.sizewarn-description" %}
 
 Whenever `num` threads are active in a [thread pool](../threading-model), a "low on threads" warning is printed. The
 default value is 0, which disables the warning.
 
 ## _adapter_.ThreadPool.ThreadIdleTime
 
-### Synopsis
+### Synopsis {% id="adapter.threadpool.threadidletime-synopsis" %}
 
 `adapter.ThreadPool.ThreadIdleTime=num`
 
-### Description
+### Description {% id="adapter.threadpool.threadidletime-description" %}
 
 In a dynamically-sized [thread pool](../threading-model), Ice reaps a thread after it is idle for `num` seconds. Setting
 this property to 0 disables idle thread reaping. If not specified, the default value is 60 seconds. See

@@ -14,22 +14,22 @@ Ice for JavaScript does not support the properties on this page. Setting any of 
 
 ## Ice.TCP.Backlog
 
-### Synopsis
+### Synopsis {% id="ice.tcp.backlog-synopsis" %}
 
 `Ice.TCP.Backlog=num`
 
-### Description
+### Description {% id="ice.tcp.backlog-description" %}
 
 Specifies the size of the listen queue for each TCP-based server endpoint (`tcp`, `ssl`, `ws`, or `wss`). The default
 value is `511`.
 
 ## Ice.TCP.RcvSize
 
-### Synopsis
+### Synopsis {% id="ice.tcp.rcvsize-synopsis" %}
 
 `Ice.TCP.RcvSize=num`
 
-### Description
+### Description {% id="ice.tcp.rcvsize-description" %}
 
 Sets the TCP receive buffer size in bytes for `tcp`, `ssl`, `ws`, and `wss` connections. The default value is `131072`
 (128 KiB) on Windows and `0` on other platforms. A value of `0` or less leaves the operating system's buffer size
@@ -42,11 +42,11 @@ addition, Ice logs a warning showing the requested size and the adjusted size.
 
 ## Ice.TCP.SndSize
 
-### Synopsis
+### Synopsis {% id="ice.tcp.sndsize-synopsis" %}
 
 `Ice.TCP.SndSize=num`
 
-### Description
+### Description {% id="ice.tcp.sndsize-description" %}
 
 Sets the TCP send buffer size in bytes for `tcp`, `ssl`, `ws`, and `wss` connections. The default value is `131072` (128
 KiB) on Windows and `0` on other platforms. A value of `0` or less leaves the operating system's buffer size unchanged.
