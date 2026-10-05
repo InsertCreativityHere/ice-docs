@@ -1,4 +1,4 @@
-{% language-section name="lang-1" %}
+{% language-section name="language-mapping-1" %}
 
 A Slice field maps to a Python dataclass field with the same name. The type of the Python field is the mapped Slice
 type.
@@ -93,9 +93,5 @@ generated code uses the following default:
 |                     | `sequence`, `dictionary` | Empty list, empty dictionary          |
 |                     | `class`, proxy           | `None`                                |
 | Yes                 | Any                      | `None`                                |
-
-{% /language-section %}
-
-{% language-section name="lang-2" %}
 
 {% /language-section %}

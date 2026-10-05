@@ -1,4 +1,4 @@
-{% language-section name="lang-1" %}
+{% language-section name="language-mapping-1" %}
 
 A Slice field maps to a MATLAB property, with by default the same name. We often remap the field name with
 `matlab:identifier` to convert the name to Pascal case.
@@ -128,9 +128,5 @@ property, the generated code uses the following default:
 |                     | `sequence`                 | `MappedElementType.empty`(implicit default), or `{}` (implicit default when the MATLAB class is specified). |
 |                     | `dictionary`               | `configureDictionary('keyType', 'valueType')`                                                               |
 | Yes                 | Any                        | `Ice.Unset`                                                                                                 |
-
-{% /language-section %}
-
-{% language-section name="lang-2" %}
 
 {% /language-section %}

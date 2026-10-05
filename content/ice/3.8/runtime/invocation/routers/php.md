@@ -1,8 +1,4 @@
-{% language-section name="lang-1" %}
-
-{% /language-section %}
-
-{% language-section name="lang-2" %}
+{% language-section name="configuring-a-router-for-client-invocations-2" %}
 
 ```php
 $router = Ice\RouterPrxHelper::createProxy(...);

@@ -1,8 +1,4 @@
-{% language-section name="lang-1" %}
-
-{% /language-section %}
-
-{% language-section name="lang-2" %}
+{% language-section name="ice.batchautoflushsize" %}
 
 ## Ice.CacheMessageBuffers
 
@@ -28,7 +24,7 @@ for dispatches.
 
 {% /language-section %}
 
-{% language-section name="lang-3" %}
+{% language-section name="ice.config" %}
 
 ## Ice.Compression.Level
 
@@ -85,7 +81,7 @@ The default value is `1`.
 
 {% /language-section %}
 
-{% language-section name="lang-4" %}
+{% language-section name="ice.httpproxyport" %}
 
 ## Ice.HTTPProxyHost
 
@@ -110,7 +106,7 @@ The port number of the HTTP proxy server. If not specified, the default value is
 
 {% /language-section %}
 
-{% language-section name="lang-5" %}
+{% language-section name="ice.ipv6" %}
 
 ## Ice.InitPlugins
 
@@ -150,7 +146,7 @@ value is 1 if the system supports the creation of IPv6 sockets, and 0 otherwise.
 
 {% /language-section %}
 
-{% language-section name="lang-6" %}
+{% language-section name="ice.printstacktraces" %}
 
 ## Ice.PluginLoadOrder
 
@@ -214,7 +210,7 @@ If `num` is set to a value larger than 0, the process ID is printed on standard 
 
 {% /language-section %}
 
-{% language-section name="lang-7" %}
+{% language-section name="ice.syslogfacility" %}
 
 ## Ice.ServerIdleTime
 
@@ -313,9 +309,5 @@ The named values can also include the `ThreadPriority.` prefix, for example `Thr
 You can separately override the default priorities for the client and server thread pools using
 [Ice.ThreadPool._name_.ThreadPriority](../ice-threadpool-properties#ice.threadpool.name.threadpriority) as well as for a
 specific object adapter using [_adapter_.ThreadPool.ThreadPriority](../object-adapter-properties).
-
-{% /language-section %}
-
-{% language-section name="lang-8" %}
 
 {% /language-section %}

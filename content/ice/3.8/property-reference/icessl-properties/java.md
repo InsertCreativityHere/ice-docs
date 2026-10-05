@@ -1,4 +1,4 @@
-{% language-section name="lang-1" %}
+{% language-section name="icessl.certstorelocation" %}
 
 ## IceSSL.Alias
 
@@ -16,11 +16,7 @@ If this property is not defined, IceSSL uses the first key entry of the key stor
 
 {% /language-section %}
 
-{% language-section name="lang-2" %}
-
-{% /language-section %}
-
-{% language-section name="lang-3" %}
+{% language-section name="icessl.keychainpassword" %}
 
 ## IceSSL.Keystore
 
@@ -114,7 +110,7 @@ and `IceSSL.KeystorePassword`. In this case, `IceSSL.TruststoreType` and `IceSSL
 
 {% /language-section %}
 
-{% language-section name="lang-4" %}
+{% language-section name="icessl.revocationcheckcacheonly" %}
 
 {% callout type="note" title="Certificate revocation" %}
 
@@ -125,7 +121,7 @@ revocation checking configured in the JDK applies.
 
 {% /language-section %}
 
-{% language-section name="lang-5" %}
+{% language-section name="icessl.trustonly.server.adaptername" %}
 
 ## IceSSL.Truststore
 

@@ -1,11 +1,7 @@
-{% language-section name="lang-1" %}
+{% language-section name="mapping-1" %}
 
 ```java
 initData.batchRequestInterceptor = (req, count, size) -> req.enqueue();
 ```
-
-{% /language-section %}
-
-{% language-section name="lang-2" %}
 
 {% /language-section %}

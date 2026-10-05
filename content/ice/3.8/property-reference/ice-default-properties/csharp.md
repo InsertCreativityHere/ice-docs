@@ -1,4 +1,4 @@
-{% language-section name="lang-1" %}
+{% language-section name="ice.default.encodingversion" %}
 
 ## Ice.Default.CollocationOptimized
 
@@ -13,9 +13,5 @@ default. When enabled, proxy invocations on a collocated servant (i.e., a servan
 the same communicator as the proxy) are made more efficiently by avoiding the network stack.
 
 If not specified, the default value is 1. Set the property to 0 to disable collocation optimization by default.
-
-{% /language-section %}
-
-{% language-section name="lang-2" %}
 
 {% /language-section %}

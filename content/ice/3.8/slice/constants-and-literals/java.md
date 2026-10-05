@@ -1,4 +1,4 @@
-{% language-section name="lang-1" %}
+{% language-section name="language-mapping-1" %}
 
 Here are the sample constant definitions once more:
 
@@ -68,9 +68,5 @@ public interface Banana {
     String value = "\ud83c\udf4c";
 }
 ```
-
-{% /language-section %}
-
-{% language-section name="lang-2" %}
 
 {% /language-section %}

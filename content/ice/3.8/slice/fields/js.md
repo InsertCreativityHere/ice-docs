@@ -1,4 +1,4 @@
-{% language-section name="lang-1" %}
+{% language-section name="language-mapping-1" %}
 
 A Slice field maps to a JavaScript class field with the same name. The type of the JavaScript field is the mapped Slice
 type.
@@ -149,9 +149,5 @@ generated code uses the following default:
 |                     | `bool`                                   | `false`                               |
 |                     | `sequence`, `dictionary`, `class`, proxy | `null`                                |
 | Yes                 | Any                                      | undefined                             |
-
-{% /language-section %}
-
-{% language-section name="lang-2" %}
 
 {% /language-section %}

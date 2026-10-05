@@ -1,4 +1,4 @@
-{% language-section name="lang-1" %}
+{% language-section name="ice.warn.connections" %}
 
 ## Ice.Warn.AMICallback
 
@@ -12,5 +12,3 @@ If `num` is set to a value larger than 0, the Ice runtime logs a warning when an
 default value is 1.
 
 {% /language-section %}
-
-{% language-section name="lang-2" state="no-addition" /%}

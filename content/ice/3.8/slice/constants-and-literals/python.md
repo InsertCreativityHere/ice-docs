@@ -1,8 +1,4 @@
-{% language-section name="lang-1" %}
-
-{% /language-section %}
-
-{% language-section name="lang-2" %}
+{% language-section name="language-mapping-2" %}
 
 Here are the constant definitions once more:
 

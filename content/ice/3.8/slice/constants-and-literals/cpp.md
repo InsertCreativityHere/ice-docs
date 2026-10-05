@@ -1,4 +1,4 @@
-{% language-section name="lang-1" %}
+{% language-section name="language-mapping-1" %}
 
 Slice constant definitions map to corresponding C++ constant definitions. Slice constants are mapped to `constexpr`
 constants whenever possible, and to `const` constants otherwise. For example:
@@ -75,9 +75,5 @@ const std::string Heart = "c\305\223ur";
 const std::wstring BigHeart = L"grand c\u0153ur";
 const std::wstring Banana = L"\U0001F34C";
 ```
-
-{% /language-section %}
-
-{% language-section name="lang-2" %}
 
 {% /language-section %}

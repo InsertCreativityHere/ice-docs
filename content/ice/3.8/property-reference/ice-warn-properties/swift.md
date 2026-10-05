@@ -1,6 +1,13 @@
-{% language-section name="lang-1" state="not-applicable" note="Swift asynchronous invocations return results through async/await, and sent callbacks do not throw. Ice.Warn.AMICallback does not control Swift errors." /%}
+{% language-section name="ice.warn.connections" %}
 
-{% language-section name="lang-2" %}
+{% callout type="note" %}
+Swift asynchronous invocations return results through async/await, and sent callbacks do not throw. Ice.Warn.AMICallback
+does not control Swift errors.
+{% /callout %}
+
+{% /language-section %}
+
+{% language-section name="ice.warn.endpoints" %}
 
 ## Ice.Warn.SliceLoader
 

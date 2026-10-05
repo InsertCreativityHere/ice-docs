@@ -1,4 +1,4 @@
-{% language-section name="lang-1" %}
+{% language-section name="language-mapping-1" %}
 
 A Slice field maps to a PHP public variable with the same name.
 
@@ -121,9 +121,5 @@ generated code uses the following default:
 |                     | `bool`                                   | `false`                               |
 |                     | `sequence`, `dictionary`, `class`, proxy | `null`                                |
 | Yes                 | Any                                      | `\Ice\None`                           |
-
-{% /language-section %}
-
-{% language-section name="lang-2" %}
 
 {% /language-section %}

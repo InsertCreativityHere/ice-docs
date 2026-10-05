@@ -1,4 +1,4 @@
-{% language-section name="lang-1" %}
+{% language-section name="icessl.certstorelocation" %}
 
 ## IceSSL.CAs
 
@@ -71,7 +71,7 @@ An Ice program running as a Windows service will typically need to set this prop
 
 {% /language-section %}
 
-{% language-section name="lang-2" %}
+{% language-section name="icessl.checkcertname" %}
 
 ## IceSSL.CheckCRL
 
@@ -111,7 +111,7 @@ with the value `2`, whether or not it is revoked.
 
 {% /language-section %}
 
-{% language-section name="lang-3" %}
+{% language-section name="icessl.keychainpassword" %}
 
 ## IceSSL.FindCert
 
@@ -146,13 +146,5 @@ The value for `criteria` may be `*`, in which case all of the certificates in th
 
 The field names are case-insensitive. If multiple criteria are specified, only certificates that match all criteria are
 selected. Values must be enclosed in single or double quotes to preserve white space.
-
-{% /language-section %}
-
-{% language-section name="lang-4" %}
-
-{% /language-section %}
-
-{% language-section name="lang-5" %}
 
 {% /language-section %}

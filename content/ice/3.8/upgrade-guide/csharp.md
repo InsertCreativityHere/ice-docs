@@ -1,4 +1,4 @@
-{% language-section name="lang-1" %}
+{% language-section name="packaging" %}
 
 ### C# NuGet Packages
 
@@ -50,7 +50,7 @@ The monolithic `zeroc.ice.net` package has been replaced with modular NuGet pack
 
 {% /language-section %}
 
-{% language-section name="lang-2" %}
+{% language-section name="proxy-creation-1" %}
 
 ```diff
 -Ice.ObjectPrx proxy =
@@ -59,9 +59,5 @@ The monolithic `zeroc.ice.net` package has been replaced with modular NuGet pack
 +var greeter =
 +    GreeterPrxHelper.createProxy(communicator, "greeter:tcp -h localhost -p 4061");
 ```
-
-{% /language-section %}
-
-{% language-section name="lang-3" %}
 
 {% /language-section %}

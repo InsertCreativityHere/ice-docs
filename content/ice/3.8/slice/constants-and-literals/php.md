@@ -1,4 +1,4 @@
-{% language-section name="lang-1" %}
+{% language-section name="language-mapping-1" %}
 
 A Slice constant maps to a PHP constant. Consider the following definitions:
 
@@ -58,9 +58,5 @@ Slice constants are mapped to PHP constants in the enclosing namespace:
 ```php
 $ans = \M\TheAnswer;
 ```
-
-{% /language-section %}
-
-{% language-section name="lang-2" %}
 
 {% /language-section %}

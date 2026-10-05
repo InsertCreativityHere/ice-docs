@@ -71,9 +71,7 @@ import { resolveDocument } from '../lib/docs-model/resolve.ts';
 const resolverTags: Record<string, Schema> = {
   'language-section': {
     attributes: {
-      name: { type: String, required: true },
-      state: { type: String, matches: ['no-addition', 'not-applicable'] },
-      note: { type: String }
+      name: { type: String, required: true }
     }
   },
   snippet: {

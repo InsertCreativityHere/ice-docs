@@ -1,25 +1,9 @@
-{% language-section name="lang-1" %}
+{% language-section name="using-the-ssl-transport-1" %}
 
 ```ruby
 greeter = VisitorCenter::GreeterPrx.new(
     communicator,
     "greeter:ssl -h localhost -p 4061");
 ```
-
-{% /language-section %}
-
-{% language-section name="lang-2" %}
-
-{% /language-section %}
-
-{% language-section name="lang-3" %}
-
-{% /language-section %}
-
-{% language-section name="lang-4" %}
-
-{% /language-section %}
-
-{% language-section name="lang-5" %}
 
 {% /language-section %}
