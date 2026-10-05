@@ -6,7 +6,7 @@ import config from '@/markdoc/schema';
 import readingTimeFunc from 'reading-time';
 import { projectLanguage } from './project-language.ts';
 
-import type { PageIndex } from '@/lib/docs-model/links';
+import type { ApiLinks, PageIndex } from '@/lib/docs-model/links';
 
 /** What a page's Markdoc schema finds in `config.variables`. */
 export interface PageVariables {
@@ -19,10 +19,15 @@ export interface PageVariables {
   /** By language mapping. */
   readingTime: Record<string, string>;
   version: string;
-  /** The version's languages, for what is computed once per language. */
+  /**
+   * The languages the text is for, for what is computed once per language:
+   * the version's, or inside an `{% iflang %}`, its own.
+   */
   languages: string[];
   /** Page index used to resolve cross-page links at build time. */
   pageIndex: PageIndex;
+  /** API reference pages used to resolve `api:` links at build time. */
+  apiLinks: ApiLinks;
   /** Navigation-derived page chrome: breadcrumbs, prev/next, body shape. */
   chrome: Record<string, unknown>;
 }
@@ -39,8 +44,16 @@ export interface RenderOptions extends Omit<
 // Transform an already-assembled Markdoc/markdown string (a shared page merged
 // with its language overlays) into a renderable Markdoc node tree.
 export function renderMarkdownString(opts: RenderOptions) {
-  const { source, path, slug, version, languages, pageIndex, frontmatter } =
-    opts;
+  const {
+    source,
+    path,
+    slug,
+    version,
+    languages,
+    pageIndex,
+    apiLinks,
+    frontmatter
+  } = opts;
 
   // One reading time per language: the page carries every mapping, and a
   // reader only reads theirs.
@@ -62,6 +75,7 @@ export function renderMarkdownString(opts: RenderOptions) {
     version,
     languages,
     pageIndex,
+    apiLinks,
     chrome: opts.chrome ?? {}
   };
   const updatedConfig: Config = { ...config, variables };
