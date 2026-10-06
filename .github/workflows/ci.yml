@@ -19,8 +19,8 @@ permissions:
 
 env:
   IMAGE: ghcr.io/zeroc-ice/ice-docs
-  SITE_URL: https://dev.docs.zeroc.com
-  SITE_NOINDEX: '1'
+  SITE_URL: https://docs.zeroc.com
+  SITE_NOINDEX: '0'
   GA_MEASUREMENT_ID: G-6J8F67JWKT
 
 jobs:
