@@ -106,11 +106,11 @@ The port number of the HTTP proxy server. If not specified, the default value is
 
 ### Description {% id="ice.initplugins-description" %}
 
-If `num` is a value greater than zero, the Ice runtime automatically initializes the plug-ins it has loaded. The order
-in which plug-ins are loaded and initialized is determined by Ice.PluginLoadOrder. An application may need to set this
-property to zero in order to interact directly with a plug-in after it has been loaded but before it is initialized. In
-this case, the application must invoke `initializePlugins` on the plug-in manager to complete the initialization
-process. If not defined, the default value is 1.
+If `num` is a value greater than zero, the Ice runtime automatically initializes the plug-ins it has loaded. Ice
+initializes plug-ins in construction order; `InitializationData.pluginFactories` and `Ice.PluginLoadOrder` determine
+this order. An application may need to set this property to zero in order to interact directly with a plug-in after it
+has been loaded but before it is initialized. In this case, the application must invoke `initializePlugins` on the
+plug-in manager to complete the initialization process. If not defined, the default value is 1.
 
 ## Ice.IPv4
 
@@ -175,12 +175,13 @@ See also: [Ice.Default.Package](../ice-default-properties)
 
 ### Description {% id="ice.pluginloadorder-description" %}
 
-Determines the order in which [plug-ins](../../plugins/plug-in-facility) are loaded (loaded is a synonym for created in
-this context). The Ice runtime loads the plug-ins in the order they appear in `names`, where each plug-in name is
-separated by a comma or white space. Any plug-ins not mentioned in `names` are loaded afterward, in an undefined order.
+Specifies the order in which Ice creates the plug-ins installed through configuration, with `Ice.Plugin.name`
+properties. `names` lists plug-in names separated by commas or white space. Ice creates the plug-ins in `names` first,
+in that order, and then the other plug-ins installed through configuration, in an undefined order.
 
-Plug-ins installed using `InitializationData::pluginFactories` are always created before all other plug-ins. They are
-not affected by this property.
+This property does not affect the plug-ins installed through `InitializationData.pluginFactories`, even when an
+`Ice.Plugin.name` property supplies their arguments: Ice creates these plug-ins in list order, before any plug-in
+installed through configuration.
 
 ## Ice.PreferIPv6Address
 

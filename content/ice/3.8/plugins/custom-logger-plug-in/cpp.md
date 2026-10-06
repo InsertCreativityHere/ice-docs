@@ -17,10 +17,10 @@ namespace Ice
 }
 ```
 
-The implementation of `initialize` and `destroy` in `LoggerPlugin` are no-op.
+The `initialize` and `destroy` methods do nothing.
 
-Now, assuming you wrote a `CustomLogger` class that implements `Ice::Logger`, you can easily create a plug-in factory
-function that creates a `LoggerPlugin` and installs your logger into the communicator:
+Now, assuming you wrote a `CustomLogger` class that implements `Ice::Logger`, you can create a plug-in factory function
+that creates a `LoggerPlugin` and installs your logger into the communicator:
 
 ```cpp
 extern "C" ICE_DECLSPEC_EXPORT Ice::Plugin* createCustomLoggerPlugin(
@@ -28,7 +28,7 @@ extern "C" ICE_DECLSPEC_EXPORT Ice::Plugin* createCustomLoggerPlugin(
     const std::string&,
     const Ice::StringSeq&)
 {
-    return new Ice::LoggerPlugin(communicator, make_shared<CustomLogger>());
+    return new Ice::LoggerPlugin(communicator, std::make_shared<CustomLogger>());
 }
 ```
 
@@ -38,6 +38,10 @@ configure your communicator to load it at runtime. For example:
 ```config
 Ice.Plugin.CustomLogger=customlogger,0:createCustomLoggerPlugin
 ```
+
+With `customlogger,0`, Ice loads `customlogger0.dll` on Windows, `libcustomlogger.so.0` on Linux, and
+`libcustomlogger.0.dylib` on macOS. See [Ice.Plugin.name](../../property-reference/ice-plugin-properties) for the format
+of this entry point.
 
 {% callout type="note" %}
 

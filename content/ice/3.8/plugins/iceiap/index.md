@@ -2,17 +2,9 @@
 title: IceIAP
 ---
 
-IceIAP is a transport plug-in that enables clients to communicate via the Apple iAP protocol reserved for accessories.
-
-iAP allows iOS client applications to communicate with accessories over Bluetooth, the Apple Lightning connector, or the
-Apple 30-pin connector. This section reviews some concepts that will help you as you learn more about IceIAP.
-
-The IceIAP transport is based on
-[Apple's External Accessory](https://developer.apple.com/documentation/externalaccessory) framework and enables Ice
-clients running on iOS devices to communicate with Ice servers running on connected accessories. This transport is a
-client-side only transport for iOS. It doesn't for instance provide the server-side transport that is required on the
-accessory side. For information on how to implement the server side, you need to be a MFI licensee and get in touch with
-ZeroC.
+IceIAP provides the `iap` and TLS-protected `iaps` transports for C++ and Swift clients on iOS. It uses
+[Apple's External Accessory framework](https://developer.apple.com/documentation/externalaccessory) to communicate with
+Ice servers on connected accessories. The accessory must provide the server side of the connection.
 
 ## Accessory Discovery
 
@@ -23,7 +15,9 @@ An accessory can be discovered based on a number of attributes:
 - its model number
 - an advertised protocol
 
-An accessory endpoint can be configured with any of these attributes to find an accessory.
+IceIAP searches the accessories that iOS reports as connected. The protocol is the one required attribute: the accessory
+must advertise the endpoint's protocol, `com.zeroc.ice` unless the endpoint specifies another. The name, manufacturer,
+and model number are optional filters. An accessory matches only when each specified value equals the accessory's value.
 
 ## Installing IceIAP
 
@@ -34,14 +28,18 @@ An accessory endpoint can be configured with any of these attributes to find an 
 An iAP endpoint in a proxy specifies attributes that are used to find and connect to a matching accessory. An iAP
 endpoint has the following syntax:
 
-`iap [-p` `PROTOCOL] [-n` `NAME] [-m` `MANUFACTURER] [-o` `MODELNUMBER]`
+`iap [-p protocol] [-n name] [-m manufacturer] [-o modelNumber] [-z]`
 
 For example, to invoke on a proxy for the `greeter` object running on an accessory that implements the
 `com.example.visitor` protocol, use the following stringified proxy:
 
-`hello:iap -p com.example.visitor`
+`greeter:iap -p com.example.visitor`
 
-To use the secured iAP endpoint, replace `iap` with `iaps`.
+The app's Info.plist lists the protocols the app uses, such as `com.example.visitor`, in the
+[UISupportedExternalAccessoryProtocols](https://developer.apple.com/documentation/bundleresources/information-property-list/uisupportedexternalaccessoryprotocols)
+key.
+
+To use TLS over iAP, replace `iap` with `iaps` and configure the [SSL transport](../../runtime/ssl-transport).
 
 ## See Also
 
