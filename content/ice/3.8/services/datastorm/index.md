@@ -5,7 +5,7 @@ pages:
   - node-server
 ---
 
-*DataStorm** is a **brokerless, C++ publish–subscribe framework**.
+**DataStorm** is a **brokerless, C++ publish–subscribe framework**.
 
 DataStorm helps you exchange data between your networked applications, with a particular focus on:
 
@@ -60,7 +60,7 @@ deserialization. For other data encodings, you can provide your own `encode` and
 
 ## DataStorm vs. IceStorm
 
-Ice also includes [**IceStorm**](../../icestorm), a broker-based publish/subscribe service that distributes Ice
+Ice also includes [**IceStorm**](../icestorm), a broker-based publish/subscribe service that distributes Ice
 invocations to subscribers. In contrast, **DataStorm** is a brokerless, data-centric framework focused on efficiently
 distributing _data samples_ rather than remote calls.
 
