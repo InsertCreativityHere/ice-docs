@@ -44,8 +44,8 @@ the topic.
 Topic<string, float> temperatures{node, "temperatures"};
 SingleKeyReader<string, float> reader{
     temperatures,
-        "floor1/kitchen",
-        "kitchen-reader"};
+    "floor1/kitchen",
+    "kitchen-reader"};
 ```
 
 Or
