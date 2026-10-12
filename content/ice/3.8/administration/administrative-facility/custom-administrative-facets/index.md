@@ -1,18 +1,24 @@
 ---
 title: Custom Administrative Facets
+languages:
+  - cpp
+  - csharp
+  - java
+  - python
+  - swift
 ---
 
-An application can add and remove administrative facets by calling `addAdminFacet` resp. `removeAdminFacet` on the
-[Communicator](api:Ice/Communicator).
+An application can add its own facets to the [admin object](../admin-object) by calling `addAdminFacet` on the
+[Communicator](api:Ice/Communicator) with a servant and a facet name, and remove them with `removeAdminFacet`. A custom
+facet is an Ice object like any other: its servant implements the Slice interface of your choice, and an administrative
+client invokes it through a proxy for this facet of the admin object, as described in
+[Using the admin Object](../using-the-admin-object).
 
-The `addAdminFacet` method installs a new facet with the given name, or throw `AlreadyRegisteredException` if a facet
-already exists with the same name. The `removeAdminFacet` method removes (and returns) the facet with the given name, or
-throws `NotRegisteredException` if no matching facet is found.
+The [facet filter](../filtering-administrative-facets) applies to custom facets: when `Ice.Admin.Facets` is set, the
+communicator exposes a custom facet only if the filter lists its name.
 
-The mechanism for [filtering administrative facets](../filtering-administrative-facets) also applies to
-application-defined facets. If you call `addAdminFacet` while a filter is in effect, and the name of your custom facet
-does not match the filter, the communicator will not expose your facet but instead keeps a reference to it so that a
-subsequent call to `removeAdminFacet` is possible.
+You can add facets before or after the communicator creates the admin object: the admin object hosts the facets added
+before its creation.
 
 We provide an example of using these communicator methods in our discussion of the [Process](../process-facet) facet.
 
