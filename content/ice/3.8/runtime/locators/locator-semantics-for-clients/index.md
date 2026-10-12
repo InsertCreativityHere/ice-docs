@@ -18,9 +18,9 @@ _Locating an object._
 3. If the object is successfully located, the locator returns its current endpoints. The communicator in the client
    caches this information, [establishes a connection](../../connection-management/connection-establishment) to one of
    the endpoints, and proceeds to send the invocation as usual.
-4. If the object's endpoints cannot be determined, the client receives an exception. `NotRegisteredException` is thrown
-   when an identity, object adapter identifier or replica group identifier is not known. A client may also receive
-   `NoEndpointException` if the location service failed to determine the current endpoints.
+4. If the communicator cannot obtain the object's endpoints, the invocation fails: it throws `NotRegisteredException`
+   when the locator does not know the object adapter ID, replica group ID or identity, and `NoEndpointException` when
+   the locator returns no usable endpoint.
 
 As far as the communicator is concerned, the locator simply converts the information in an indirect proxy into usable
 endpoints. Whether the locator's implementation is more sophisticated than a simple lookup table is irrelevant to the
@@ -68,7 +68,8 @@ but this impact is influenced by the communicator's caching behavior.
 
 To minimize the number of `locate` requests, the communicator caches the results of previous requests. By default, the
 results are cached indefinitely, so that once the communicator has obtained the endpoints associated with an indirect
-proxy, it never issues another `locate` request for that proxy. Furthermore, the default behavior of a proxy is to
+proxy, it issues another `locate` request for that proxy only after clearing the cache entry, as described below.
+Furthermore, the default behavior of a proxy is to
 [cache its connection](../../connection-management/connection-establishment), that is, once a proxy has obtained a
 connection, it continues to use that connection indefinitely.
 
@@ -84,6 +85,10 @@ otherwise it attempts to establish a new connection to each of the endpoints unt
 fails does the communicator clear the entry from its cache and issue a new `locate` request with the expectation that a
 usable endpoint is returned.
 
+The communicator also clears the cache entry of a well-known proxy when an invocation on that proxy fails with
+`ObjectNotExistException`; the [automatic retry](../../invocation/automatic-retries) of the invocation then issues a new
+`locate` request.
+
 The communicator's default behavior is optimized for applications that require minimal interaction with the location
 service, but some applications can benefit from more frequent `locate` requests. Normally this is desirable when
 implementing a load-balancing strategy, as we discuss in more detail below. In order to increase the frequency of locate
@@ -91,18 +96,22 @@ requests, an application must configure a timeout for the locator cache and mani
 
 ## Locator Cache Timeout
 
-An application can define a timeout to control the lifetime of entries in the locator cache. This timeout can be
-specified globally using the [Ice.Default.LocatorCacheTimeout](../../../property-reference/ice-default-properties)
-property and for individual proxies using the [proxy method](api:Ice/ObjectPrx) `ice_locatorCacheTimeout`. The
-communicator's default behavior is equivalent to a timeout value of `-1`, meaning the cache entries never expire. Using
-a timeout value greater than zero causes the cache entries to expire after the specified number of seconds. Finally, a
-timeout value of zero disables the locator cache altogether.
+An application can define a timeout, in seconds, to control the lifetime of entries in the locator cache. The
+application sets this timeout globally using the
+[Ice.Default.LocatorCacheTimeout](../../../property-reference/ice-default-properties) property, for a proxy created with
+`propertyToProxy` using the [name.LocatorCacheTimeout](../../../property-reference/proxy-properties) property, and for
+individual proxies using the [proxy method](api:Ice/ObjectPrx) `ice_locatorCacheTimeout`. A timeout of `-1`, the
+default, means the cache entries never expire. A timeout greater than zero causes the cache entries to expire after the
+specified number of seconds. Finally, a timeout of zero disables the locator cache altogether.
 
 The previous section explained the circumstances in which the communicator consults its locator cache. Briefly, this
 occurs only when the application has invoked an operation on a proxy and the proxy is not currently associated with a
 connection. If the timeout is set to zero, the communicator issues a new `locate` request immediately. Otherwise, for a
 non-zero timeout, the communicator examines its locator cache to determine whether the endpoints from the previous
-`locate` request have expired. If so, the communicator discards them and issues a new `locate` request.
+`locate` request have expired. If so, the communicator issues a new `locate` request. With
+[Ice.BackgroundLocatorCacheUpdates](../../../property-reference/ice-properties) set to 0, the default, the invocation
+waits for the locator's reply and uses the new endpoints. With a value greater than 0, the invocation uses the expired
+cache entry, and the `locate` request refreshes the cache in the background.
 
 Given this behavior, if your goal is to force a proxy invocation to issue `locate` requests more frequently, you can do
 so only when the proxy is not associated with a connection. You can accomplish that in several ways:
@@ -146,5 +155,8 @@ the communicator issues a new `locate` request and obtains a fresh set of endpoi
 
 - [Terminology](../../../basics/terminology)
 - [Connection Establishment](../../connection-management/connection-establishment)
+- [Automatic Retries](../../invocation/automatic-retries)
+- [Ice.*](../../../property-reference/ice-properties)
 - [Ice.Default.*](../../../property-reference/ice-default-properties)
+- [Proxy Properties](../../../property-reference/proxy-properties)
 - [Proxy-Based Load Balancing](../../invocation/proxy-based-load-balancing)
