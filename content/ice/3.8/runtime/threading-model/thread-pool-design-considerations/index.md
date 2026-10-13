@@ -1,5 +1,11 @@
 ---
 title: Thread Pool Design Considerations
+languages:
+  - cpp
+  - csharp
+  - java
+  - python
+  - swift
 ---
 
 Improper configuration of a [thread pool](../thread-pools) can have a serious impact on the performance of your

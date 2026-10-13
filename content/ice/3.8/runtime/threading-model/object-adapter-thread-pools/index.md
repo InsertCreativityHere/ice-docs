@@ -1,5 +1,11 @@
 ---
 title: Object Adapter Thread Pools
+languages:
+  - cpp
+  - csharp
+  - java
+  - python
+  - swift
 ---
 
 The default behavior of an [object adapter](../../dispatch) is to share the [thread pool](../thread-pools) of its
