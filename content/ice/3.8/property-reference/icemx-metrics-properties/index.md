@@ -102,18 +102,39 @@ runtime.
 
 {% property-description %}
 
-This property defines how metrics are grouped and how the ID of each metrics object is created. The default value is
-`id`. The grouping is based on attributes specific to the instrumented object or operation. For example, you can group
-the invocation metrics by operation name or proxy identity. All the invocations with the same operation name or proxy
-identity will record metrics using the same metrics object. You can specify several attributes to group metrics based on
-multiple attributes. You must delimit the attributes with delimiters when specifying the value of the GroupBy property.
-A delimiter is any character which is not an alpha numeric or the dot character. Attributes which can be used to specify
-the value of this property are defined in the relevant section of the Ice documentation. Here are some examples of
-GroupBy properties.
+Sets the attributes by which a map groups the instrumented objects or operations it records: all those with the same
+values for these attributes are grouped into one metrics object, whose ID is built from these values. The default value
+is `id`, which groups nothing: each instrumented object or operation gets its own metrics object.
 
-- `IceMX.Metrics.MyView.GroupBy=operation`
-- `IceMX.Metrics.MyView.GroupBy=identity [operation]`
-- `IceMX.Metrics.MyView.GroupBy=remoteHost:remotePort`
+To group by several attributes, separate them with a space or punctuation (any character other than a letter, a digit or
+a dot). The separators appear in the IDs: for example, `identity [operation]` groups invocations by proxy identity and
+operation name, with IDs such as `hello [sayHello]`, and `remoteHost:remotePort` gives IDs such as `192.168.1.10:4061`.
+
+Each map supports its own set of attributes, listed in
+[Metrics Attributes](../../administration/administrative-facility/metrics-facet#metrics-attributes) for the Ice runtime,
+and in [Glacier2 Metrics](../../services/glacier2/glacier2-metrics) and
+[IceStorm Metrics](../../services/icestorm/icestorm-metrics) for these services. A map records an instrumented object or
+operation only when it can resolve every attribute in `GroupBy`.
+
+A view-level `GroupBy` applies to every map of a view that has no `Map.` properties, so it suits only the attributes
+every map supports: `id`, `parent` and `none`. In a view with `Map.` properties, each map uses its own `GroupBy`. To
+group by an attribute that only some maps support, set `GroupBy` on these maps:
+
+```config
+IceMX.Metrics.ByOperation.Map.Invocation.GroupBy=operation
+IceMX.Metrics.ByOperation.Map.Invocation.Map.Remote.GroupBy=id
+IceMX.Metrics.ByOperation.Map.Invocation.Map.Collocated.GroupBy=id
+
+IceMX.Metrics.ByIdentity.Map.Invocation.GroupBy=identity [operation]
+IceMX.Metrics.ByIdentity.Map.Invocation.Map.Remote.GroupBy=id
+IceMX.Metrics.ByIdentity.Map.Invocation.Map.Collocated.GroupBy=id
+
+IceMX.Metrics.ByPeer.Map.Connection.GroupBy=remoteHost:remotePort
+```
+
+A view with `Map.` properties includes only the maps they name. The `Remote` and `Collocated` sub-maps of the Invocation
+map inherit its `GroupBy` unless they set their own, and they support neither `operation` nor `identity`, so the first
+two views set their `GroupBy` to `id`.
 
 {% /property-description %}
 
