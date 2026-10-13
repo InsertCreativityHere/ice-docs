@@ -12,19 +12,21 @@ import { IceMark } from './IceMark';
 export function IceHeader() {
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-hairline bg-surface/85 px-[clamp(1rem,2.5vw,2rem)] backdrop-blur">
-      {/* First in the bar, so it is the first thing the Tab key reaches. */}
-      <a
-        href="#skip-nav"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-surface focus:px-3 focus:py-2 focus:text-ink focus:outline-2 focus:outline-link"
-      >
-        Skip to content
-      </a>
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="relative flex shrink-0 items-center gap-2">
+        {/* The first element in the bar, so the Tab key reaches it before
+            anything else. When it has focus it is drawn over the logo, covering
+            it, so nothing else in the bar moves. */}
+        <a
+          href="#skip-nav"
+          className="sr-only focus-ring focus:not-sr-only focus:absolute focus:inset-y-0 focus:left-0 focus:z-10 focus:flex focus:min-w-full focus:items-center focus:rounded-md focus:bg-surface focus:px-3 focus:text-xl focus:whitespace-nowrap focus:text-ink"
+        >
+          Skip to content
+        </a>
         {/* The table of contents' menu button portals in here from the
             docs layout, the only place that has the tree. The slot has
             no box of its own, so a page without the button has no gap. */}
         <div id="ice-header-menu" className="contents" />
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="focus-ring-text flex items-center gap-2">
           <IceMark className="size-8" />
           {/* The mark alone has to do on a phone, where the controls already
               fill the bar. */}
@@ -45,7 +47,7 @@ export function IceHeader() {
           href="https://github.com/zeroc-ice/ice"
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden shrink-0 text-ink-secondary transition-colors hover:text-ink lg:inline"
+          className="hidden h-8 shrink-0 items-center rounded-md px-2 text-ink-secondary focus-ring transition-colors hover:text-ink lg:flex"
         >
           GitHub
         </a>

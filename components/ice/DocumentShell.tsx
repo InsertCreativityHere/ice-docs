@@ -93,7 +93,7 @@ export const DocumentShell = ({
     : [];
 
   return (
-    <div className="flex shrink flex-row justify-center overflow-y-clip lg:justify-start">
+    <div className="flex shrink flex-row justify-center lg:justify-start">
       <div className="size-full max-w-232 contain-inline-size sm:mx-6 md:mx-10 lg:mx-12">
         {breadcrumbs.length > 0 && (
           <nav
@@ -111,7 +111,7 @@ export const DocumentShell = ({
                   {crumb.href ? (
                     <Link
                       href={crumb.href}
-                      className="font-medium text-link transition-colors hover:text-ink"
+                      className="focus-ring-text font-medium text-link transition-colors hover:text-ink"
                     >
                       {crumb.title}
                     </Link>
@@ -186,7 +186,10 @@ export const DocumentShell = ({
                 page in this section" the same visual weight as the article, which
                 is conspicuous on a short page where the card is most of it. */}
                 {prev ? (
-                  <Link href={prev.href} className="group min-w-0 flex-1">
+                  <Link
+                    href={prev.href}
+                    className="group focus-ring-text min-w-0 flex-1"
+                  >
                     <div className="text-[11px] font-semibold tracking-[0.04em] text-ink-muted uppercase">
                       Previous
                     </div>
@@ -201,7 +204,7 @@ export const DocumentShell = ({
                 {next ? (
                   <Link
                     href={next.href}
-                    className="group min-w-0 flex-1 text-right"
+                    className="group focus-ring-text min-w-0 flex-1 text-right"
                   >
                     <div className="text-[11px] font-semibold tracking-[0.04em] text-ink-muted uppercase">
                       Next

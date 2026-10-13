@@ -17,6 +17,33 @@
   }
 }
 
+/* A control's focus ring, drawn inside its edge so no clipping container can
+   cut it. The colour is set before focus too, so a colour transition does not
+   fade the ring in. */
+@utility focus-ring {
+  outline-color: var(--link);
+  &:focus-visible {
+    outline-width: 2px;
+    outline-style: solid;
+    outline-offset: -2px;
+  }
+}
+
+/* A text link's focus ring, drawn outside a box widened by 2px each side so it
+   clears the glyphs; the margins keep the text in place. The tighter corners
+   give the same curve as a ring drawn inside. */
+@utility focus-ring-text {
+  padding-inline: 2px;
+  margin-inline: -2px;
+  outline-color: var(--link);
+  &:focus-visible {
+    outline-width: 2px;
+    outline-style: solid;
+    outline-offset: 2px;
+    border-radius: calc(var(--radius-md) - 4px);
+  }
+}
+
 @theme {
   --color-primary: rgb(var(--primary-color));
   --color-light-border: #dce6e9;
