@@ -240,6 +240,7 @@
     "startswith",
     "staticmethod",
     "stcp",
+    "strcmp",
     "Stringifying",
     "subkey",
     "submap",
