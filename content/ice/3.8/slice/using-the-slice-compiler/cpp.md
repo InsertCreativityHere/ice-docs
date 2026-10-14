@@ -250,4 +250,59 @@ The source file now contains the following `#include` directive:
 
 The directive still omits the directory of the Slice file, `inc`.
 
+## Using Ice with CMake
+
+Ice for C++ ships with a CMake package that defines an imported library target for each Ice library, such as `Ice::Ice`
+and `Ice::IceGrid`, and the `slice2cpp_generate` function, which compiles the Slice files of a target as part of the
+build. For example:
+
+```cmake
+cmake_minimum_required(VERSION 3.21)
+project(greeter CXX)
+
+find_package(Ice REQUIRED CONFIG)
+
+add_executable(client Client.cpp Greeter.ice)
+slice2cpp_generate(client)
+target_link_libraries(client PRIVATE Ice::Ice)
+```
+
+The package requires CMake 3.21 or later. The `CONFIG` keyword makes `find_package` use config mode: it loads the
+package configuration file that Ice for C++ provides, rather than the `FindIce` find module that ships with CMake.
+Config mode is what CMake recommends for a project that provides its own package configuration
+([cmake-packages(7)](https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html)).
+
+If you installed Ice in a directory that CMake does not search by default, such as `/opt/Ice`, add that directory to
+`CMAKE_PREFIX_PATH`. On Windows, Ice for C++ is the `ZeroC.Ice.Cpp` NuGet package: set `Ice_ROOT` to the package's
+directory, such as `packages/ZeroC.Ice.Cpp.3.8.3`.
+
+`slice2cpp_generate(client)`:
+
+- compiles each Slice file in the sources of `client` with `slice2cpp`, and adds the generated header and source files
+  to the target's sources;
+- adds the directory of the generated headers to the target's include directories, so `Client.cpp` can
+  `#include "Greeter.h"`;
+- passes `Ice_SLICE_DIR`, the directory of the Ice Slice files, to `slice2cpp` with `-I`, so
+  `#include <Ice/Identity.ice>` resolves;
+- records the Slice files that each Slice file includes in a dependency file, so the build compiles a Slice file again
+  when it, or a file it includes, changes.
+
+Call `slice2cpp_generate` in the same `CMakeLists.txt` as the `add_executable` or `add_library` call that creates the
+target, after that call lists the target's Slice files.
+
+### `slice2cpp_generate` Arguments
+
+| Argument                                             | Description                                                                                                                   |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `INCLUDE_DIRS <dir>...`                              | Directories to search for included Slice files, passed to `slice2cpp` with `-I`.                                              |
+| `OPTIONS <option>...`                                | Other `slice2cpp` options, such as `-D` or `--header-ext`.                                                                    |
+| `HEADER_OUTPUT_DIR <dir>`                            | The directory for the generated headers, instead of the default under the build directory.                                    |
+| `INCLUDE_DIR <dir>`                                  | The include prefix of the generated headers, passed to `slice2cpp` with `--include-dir`.                                      |
+| `INCLUDE_SCOPE PRIVATE\|PUBLIC`                      | With `PUBLIC`, the targets that link this target also get the directories of the generated headers. The default is `PRIVATE`. |
+| `DEPENDS <dep>...`                                   | Other files whose changes recompile the Slice files.                                                                          |
+| `GENERATED_HEADERS <var>`, `GENERATED_SOURCES <var>` | Variables that receive the paths of the generated headers and sources.                                                        |
+
+The [CMake package README](https://github.com/zeroc-ice/ice/blob/3.8/cpp/cmake/README.md) covers the variables that
+`find_package` sets, copying the Ice DLLs on Windows, the generated file layout, and installing the generated headers.
+
 {% /language-section %}
