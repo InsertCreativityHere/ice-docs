@@ -89,6 +89,16 @@ The default mode is `Unicode`.
 The `Compat` mode is provided for backwards-compatibility with Ice 3.6 and earlier. These older versions do not
 recognize universal character names and reject non-printable ASCII characters in stringified identities.
 
+## Comparing Proxies by Identity
+
+Proxy equality (`==` in C++, MATLAB, PHP, Python, Ruby, and Swift; `Equals` in C#; `equals` in Java and JavaScript)
+compares all the settings of the two proxies, not just their identities: two proxies for the same Ice object with
+different endpoints or invocation timeouts are not equal.
+
+To compare proxies by identity, compare the identities returned by
+`ice_getIdentity`{% iflang langs="cpp,csharp,java,matlab,php,python,ruby" %}, or use the identity comparison helpers of
+your language mapping, described in its API reference{% /iflang %}.
+
 ## See Also
 
 - [Default Servants](../dispatch/default-servants)
