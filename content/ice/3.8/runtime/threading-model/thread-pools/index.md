@@ -17,36 +17,48 @@ A thread pool is a collection of threads that the Ice runtime draws upon to perf
 
 Each communicator creates two thread pools:
 
-- The _client thread pool_ services outgoing connections, which primarily involves handling the replies to outgoing
-  requests and includes executing AMI callbacks. If a connection is used in
+- The _client thread pool_ services outgoing connections: it sends the requests that the invoking thread cannot send
+  right away and handles the replies to outgoing requests{% iflang langs="cpp,java,python" %}, which includes running
+  the AMI callbacks{% /iflang %}. If a connection is used in
   [bidirectional mode](../../connection-management/bidirectional-connections), the client thread pool also dispatches
   incoming requests.
-- The _server thread pool_ services incoming connections. It dispatches incoming requests and, for bidirectional
-  connections, processes replies to outgoing requests.
+- The _server thread pool_ services incoming connections: it dispatches incoming requests and, for bidirectional
+  connections, services the outgoing requests sent over these connections.
+
+{% iflang langs="python" %}
+
+A communicator can have an event loop adapter: you give it one by creating the communicator with an asyncio event loop
+or by setting `InitializationData.eventLoopAdapter`. A coroutine dispatch method and the code that follows an awaited
+invocation then run on this event loop. Without an event loop adapter, they run on the thread pool thread that
+dispatches the request or completes the invocation.
+
+{% /iflang %}
 
 By default, these two thread pools are shared by all of the communicator's [object adapters](../../dispatch). If
 necessary, you can configure individual object adapters to use a [private thread pool](../object-adapter-thread-pools)
 instead.
 
-If a thread pool is exhausted because all threads are currently dispatching a request, additional incoming requests are
-transparently delayed until a request completes and relinquishes its thread; that thread is then used to dispatch the
-next pending request. Ice minimizes thread context switches in a thread pool by using a leader-follower implementation
-[\[1\]](#references).
+When all the threads of a thread pool are busy, the pool is exhausted: Ice delays the processing of additional incoming
+messages until a thread becomes available. Ice minimizes thread context switches in a thread pool by using a
+leader-follower implementation [\[1\]](#references).
 
 {% callout type="warning" %}
 
 While Ice tolerates a transient thread pool exhaustion, you should avoid thread exhaustion and not use thread pool
 exhaustion for flow-control.
 
-Use instead [Ice.Connection.name.MaxDispatches](../../../property-reference/ice-connection-properties) and
-[adapter.MaxConnections](../../../property-reference/object-adapter-properties).
+Use instead
+[Ice.Connection.name.MaxDispatches](../../../property-reference/ice-connection-properties#ice.connection.name.maxdispatches)
+and [adapter.MaxConnections](../../../property-reference/object-adapter-properties#adapter.maxconnections).
 
 {% /callout %}
 
 ## Configuring Thread Pools
 
 Each thread pool has a unique name that serves as the prefix for its configuration properties:
-[*name.*Size](../../../property-reference/ice-threadpool-properties), `name.SizeMax`, `name.SizeWarn`, etc.
+[_name_.Size](../../../property-reference/ice-threadpool-properties#ice.threadpool.name.size),
+[_name_.SizeMax](../../../property-reference/ice-threadpool-properties#ice.threadpool.name.sizemax),
+[_name_.SizeWarn](../../../property-reference/ice-threadpool-properties#ice.threadpool.name.sizewarn), etc.
 
 For configuration purposes, the names of the client and server thread pools are `Ice.ThreadPool.Client` and
 `Ice.ThreadPool.Server`, respectively. As an example, the following properties establish the initial and maximum sizes
@@ -59,10 +71,9 @@ Ice.ThreadPool.Server.Size=1
 Ice.ThreadPool.Server.SizeMax=10
 ```
 
-To monitor the thread pool activities of a communicator, you can enable the
-[Ice.Trace.ThreadPool](../../../property-reference/ice-trace-properties) property. Setting this property to a non-zero
-value causes the communicator to log a message when it creates a thread pool, as well as each time the size of a thread
-pool increases or decreases.
+To monitor the thread pool activities of a communicator, set
+[Ice.Trace.ThreadPool](../../../property-reference/ice-trace-properties#ice.trace.threadpool) to 1: the communicator
+then logs a message when it creates a thread pool, and each time the size of a thread pool increases or decreases.
 
 ## Dynamic Thread Pools
 
@@ -70,11 +81,14 @@ A _dynamic_ thread pool can grow and shrink when necessary in response to change
 thread pools have at least one thread, but a dynamic thread pool can grow as the demand for threads increases, up to the
 pool's maximum size. Threads may also be terminated automatically when they have been idle for some time.
 
-The dynamic nature of a thread pool is determined by the configuration properties `name.Size`, `name.SizeMax`, and
-`name.ThreadIdleTime`. A thread pool is not dynamic in its default configuration because `name.Size` and `name.SizeMax`
-are both set to 1, meaning the pool can never grow to contain more than a single thread. To configure a dynamic thread
-pool, you must set at least one of `name.Size` or `name.SizeMax` to a value greater than 1. We can use several
-configuration scenarios to explore the semantics of dynamic thread pools in greater detail:
+The configuration properties
+[_name_.Size](../../../property-reference/ice-threadpool-properties#ice.threadpool.name.size),
+[_name_.SizeMax](../../../property-reference/ice-threadpool-properties#ice.threadpool.name.sizemax), and
+[_name_.ThreadIdleTime](../../../property-reference/ice-threadpool-properties#ice.threadpool.name.threadidletime)
+determine whether a thread pool is dynamic. A thread pool is not dynamic in its default configuration because
+`name.Size` and `name.SizeMax` are both set to 1, meaning the pool can never grow to contain more than a single thread.
+To configure a dynamic thread pool, you must set at least one of `name.Size` or `name.SizeMax` to a value greater
+than 1. We can use several configuration scenarios to explore the semantics of dynamic thread pools in greater detail:
 
 ```config
 name.SizeMax=5
@@ -119,6 +133,32 @@ This thread pool starts with 5 threads and can neither grow nor shrink.
 To summarize, the value of `name.ThreadIdleTime` determines whether (and how quickly) a thread pool can shrink to a size
 of 1. A thread pool that shrinks can also grow to its maximum size. Finally, setting `name.SizeMax` to a value larger
 than `name.Size` allows a thread pool to grow beyond its initial capacity.
+
+## Serializing the Messages of Each Connection
+
+A multi-threaded pool can dispatch several requests received over the same connection concurrently. Setting
+[_name_.Serialize](../../../property-reference/ice-threadpool-properties#ice.threadpool.name.serialize) to 1 makes the
+pool process the messages of each connection one at a time, in the order received, while it still dispatches requests
+from different connections concurrently.
+
+`Serialize` differs from
+[Ice.Connection.name.MaxDispatches](../../../property-reference/ice-connection-properties#ice.connection.name.maxdispatches)
+set to 1. With `Serialize`, the pool starts the next dispatch of a connection as soon as the previous dispatch method
+returns, even when this dispatch completes later, asynchronously. With `MaxDispatches` set to 1, the connection stops
+reading requests from the start of a dispatch until it sends the dispatch's response.
+
+{% iflang langs="cpp,csharp,java,python" %}
+
+## Executing Dispatches and Callbacks with Your Own Executor
+
+By default, a thread pool thread executes the dispatches of its connections{% iflang langs="cpp,java" %} and the AMI
+callbacks{% /iflang %}{% iflang langs="python" %} and the callbacks of Ice futures{% /iflang %}. The `executor` field of
+`InitializationData` lets your application execute these calls instead: the communicator passes each call to your
+executor, which must execute it, for example by queuing it to a UI thread so that
+dispatches{% iflang langs="cpp,java,python" %} and callbacks{% /iflang %} can update UI objects directly. The executor,
+rather than the size of the thread pool, then determines which of the calls it receives run concurrently.
+
+{% /iflang %}
 
 ## See Also
 

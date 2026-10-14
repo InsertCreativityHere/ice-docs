@@ -8,36 +8,73 @@ languages:
   - swift
 ---
 
-Improper configuration of a [thread pool](../thread-pools) can have a serious impact on the performance of your
-application. This page discusses some issues that you should consider when designing and configuring your applications.
+By default, the client and server thread pools of a communicator have a single thread, so Ice dispatches one request at
+a time and processes one reply at a time. To let your application dispatch requests or process replies concurrently, you
+increase the maximum size of these thread pools. This page describes what each choice means for your application.
 
 ## Single-Threaded Pool
 
-There are several implications of using a thread pool with a maximum size of one thread:
+A thread pool with a maximum size of one thread behaves as follows:
 
-- **Only one message can be dispatched at a time.** This can be convenient because it lets you avoid (or postpone)
-  dealing with thread-safety issues in your application. However, it also eliminates the possibility of dispatching
-  requests concurrently, which can be a bottleneck for applications running on multi-CPU systems or that perform
-  blocking operations.
-- **Only one AMI reply can be processed at a time.** An application must increase the size of the client thread pool in
-  order to process multiple AMI callbacks in parallel.
+{% iflang langs="cpp,java" %}
 
-It is important to remember that a communicator's client and server thread pools have a default maximum size of **1
-thread**, therefore these limitations also apply to any object adapter that shares the communicator's thread pools.
+- **The pool dispatches one request at a time**, which lets you avoid (or postpone) dealing with thread-safety issues in
+  your servants.
+- **The pool processes one reply at a time.** The AMI callbacks, which run on the same thread, also run one at a time.
+
+{% /iflang %}
+
+{% iflang langs="csharp" %}
+
+- **The pool dispatches one request at a time**, which lets you avoid (or postpone) dealing with thread-safety issues in
+  servants with synchronous dispatch methods.
+- **The pool processes one reply at a time.**
+
+{% /iflang %}
+
+{% iflang langs="python" %}
+
+- **The pool dispatches one request at a time.**
+- **The pool processes one reply at a time.**
+
+{% /iflang %}
+
+{% iflang langs="swift" %}
+
+- **The pool reads one request at a time.** The dispatches themselves run concurrently, each in its own task;
+  [Ice.Connection.name.MaxDispatches](../../../property-reference/ice-connection-properties#ice.connection.name.maxdispatches)
+  limits the concurrent dispatches on a connection.
+- **The pool processes one reply at a time.**
+
+{% /iflang %}
 
 ## Multi-Threaded Pool
 
-Configuring a thread pool to support multiple threads implies that the application is prepared for the Ice runtime to
-dispatch operation invocations or AMI callbacks concurrently. Although greater effort is required to design a
-thread-safe application, you are rewarded with the ability to improve the application's scalability and throughput.
+{% iflang langs="cpp,csharp,java" %}
 
-Choosing an appropriate maximum size for a thread pool requires careful analysis of your application. For example, in
-compute-bound applications it is best to limit the number of threads to the number of physical processor cores or
-threads on the host machine; adding any more threads only increases context switches and reduces performance. Increasing
-the size of the pool beyond the number of cores can improve responsiveness when threads can become blocked while waiting
-for the operating system to complete a task, such as a network or file operation. On the other hand, a thread pool
-configured with too many threads can have the opposite effect and negatively impact performance. Testing your
-application in a realistic environment is the recommended way of determining the optimum size for a thread pool.
+A thread pool with several threads dispatches requests{% iflang langs="cpp,java" %} and runs AMI callbacks{% /iflang %}
+concurrently, so your servants{% iflang langs="cpp,java" %} and callbacks{% /iflang %} must be thread-safe. The right
+maximum size depends on your workload: a compute-bound server gains nothing from more threads than cores, while a server
+whose dispatches block, on I/O for example, benefits from more threads than cores. Test with a realistic workload to
+find this size.
+
+{% /iflang %}
+
+{% iflang langs="python" %}
+
+The Python interpreter executes one thread at a time. With a multi-threaded pool, a dispatch that blocks (on I/O, for
+example) lets another dispatch run, but two dispatches never run in parallel. Your servants must still be thread-safe,
+since the interpreter can switch from one dispatch to another at any point.
+
+{% /iflang %}
+
+{% iflang langs="swift" %}
+
+Each dispatch runs in its own task, executed by Swift concurrency's global concurrent executor whatever the size of the
+Ice thread pool, so dispatches run concurrently and your servants must be safe for concurrent calls. A multi-threaded
+pool only reads requests and replies in parallel.
+
+{% /iflang %}
 
 ## See Also
 

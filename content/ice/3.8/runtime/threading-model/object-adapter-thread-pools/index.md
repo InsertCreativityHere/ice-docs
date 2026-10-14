@@ -8,29 +8,22 @@ languages:
   - swift
 ---
 
-The default behavior of an [object adapter](../../dispatch) is to share the [thread pool](../thread-pools) of its
-communicator and, for many applications, this behavior is entirely sufficient. However, the ability to configure an
-object adapter with its own thread pool is useful in certain situations:
+An [object adapter](../../dispatch) uses a [thread pool](../thread-pools) to accept connections and to read and dispatch
+the requests that arrive on them. By default, it uses the server thread pool of its communicator, which is sufficient
+for most applications. An object adapter with its own thread pool is useful in three situations:
 
-- When the concurrency requirements of an object adapter does not match those of its communicator. In a server with
-  multiple object adapters, the configuration of the communicator's client and server thread pools may be a good match
-  for some object adapters, but others may have different requirements. For example, the servants hosted by one object
-  adapter may not support concurrent access, in which case limiting that object adapter to a single-threaded pool
-  eliminates the need for synchronization in those servants. On the other hand, another object adapter might need a
-  multi-threaded pool for better performance.
+- The object adapter hosts servants that are not thread-safe, and you want all the dispatches to these servants, from
+  any connection, to run one at a time: a dedicated thread pool with `Size` and `SizeMax` set to 1 does this.
+- The opposite: the communicator's server thread pool has a single thread, the default, and you want this object adapter
+  to dispatch requests concurrently.
+- You want to insulate this object adapter from the exhaustion of the communicator's server thread pool by the
+  dispatches of other object adapters.
 
-- To ensure that a minimum number of threads is available for dispatching requests to an adapter's servants.
-
-An object adapter's thread pool supports all of the properties described in [Configuring Thread Pools](../thread-pools).
-For configuration purposes, the name of an adapter's thread pool is `adapter.ThreadPool`, where `adapter` is the name of
-the adapter.
-
-An adapter creates its own thread pool when any
-[_adapter_.ThreadPool.\*](../../../property-reference/object-adapter-properties) property is set; otherwise, it uses the
-communicator's server thread pool. These properties have the same semantics and default values as those described
-earlier.
-
-As an example, the properties shown below configure a thread pool for the object adapter named `PrinterAdapter`:
+An object adapter creates its own thread pool when any
+[_adapter_.ThreadPool.\*](../../../property-reference/object-adapter-properties) property is set. These properties have
+the same meaning and defaults as the [Ice.ThreadPool.\*](../../../property-reference/ice-threadpool-properties)
+properties of the communicator's thread pools. For example, the properties shown below configure a thread pool for the
+object adapter named `PrinterAdapter`:
 
 ```config
 PrinterAdapter.ThreadPool.Size=3
