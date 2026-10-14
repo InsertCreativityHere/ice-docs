@@ -31,6 +31,8 @@ are also permitted in identifiers with the following limitations:
 
 Given these rules, the identifier `get_account_name` is legal but not `_account`, `account_`, or `get__account`.
 
+An identifier cannot end with `Helper`, `Holder`, `Prx`, or `Ptr`.
+
 Slice identifiers are restricted to the ASCII range of alphabetic characters and cannot contain non-English letters,
 such as Å.
 
