@@ -8,6 +8,12 @@ eventually closes incoming connections.
 A connection closure can be either graceful or abortive. A graceful close requires coordination with the peer, and
 therefore can take some time, while an abort is immediate.
 
+The timeouts on this page are [Ice.Connection.\*](../../../property-reference/ice-connection-properties) properties:
+`Ice.Connection.Client.*` configures outgoing connections, and
+[adapter.Connection.\*](../../../property-reference/object-adapter-properties) configures the incoming connections of an
+object adapter, with `Ice.Connection.Server.*` as defaults. The idle check and the inactivity check do not apply to UDP
+connections.
+
 ## The Idle Check
 
 Once a connection is established, Ice aborts a connection when a read or write on this connections fails.
@@ -21,7 +27,7 @@ Ice provides a simple mechanism to monitor connection health: the idle check. If
 over [IdleTimeout](../../../property-reference/ice-connection-properties), the connection is considered idle and
 aborted.
 
-The default idle timeout is 60 seconds.
+The default idle timeout is 60 seconds. Setting `IdleTimeout` to 0 disables the idle check and the heartbeats.
 
 This idle check requires regular “write” activity from a healthy peer, which Ice provides: when the application does not
 write anything to a connection for half the idle timeout, Ice sends (writes) a heartbeat message to clear the idle check
@@ -29,6 +35,15 @@ in the peer. A heartbeat is a oneway, unacknowledged, `ValidateConnection` messa
 
 In order to operate properly, the idle check requires the same `IdleTimeout` configuration on both sides of the
 connection. You should assign the same idle timeout to all your clients and servers, and typically keep the default.
+
+{% iflang langs="cpp,csharp,java,python,swift" %}
+
+A connection that reached its [MaxDispatches](../../../property-reference/ice-connection-properties) limit stops reading
+and suspends its idle check until the number of dispatches falls below this limit. A connection that nobody reads
+because all the threads of its thread pool are busy does not suspend it: when the starvation lasts longer than the idle
+timeout, the idle check aborts the connection.
+
+{% /iflang %}
 
 {% callout type="note" %}
 
@@ -57,6 +72,8 @@ This is where the “inactivity check” comes in. A connection that remains ina
 [InactivityTimeout](../../../property-reference/ice-connection-properties) is automatically closed. This timeout only
 takes into account application-level activities: heartbeats don’t count. The default inactivity timeout is 300 seconds
 (5 minutes).
+
+Setting `InactivityTimeout` to 0 disables the inactivity check; `disableInactivityCheck` disables it for one connection.
 
 {% callout type="warning" %}
 
@@ -87,6 +104,27 @@ complete.
 
 This process can take some time. If the graceful closure exceeds the configured
 [CloseTimeout](../../../property-reference/ice-connection-properties), the connection is aborted.
+
+Ice closes a connection gracefully when:
+
+- the application closes it with `close`, as described [below](#closing-a-connection-from-the-application); or
+- the [inactivity check](#the-inactivity-check) finds it inactive.
+
+Ice also closes connections when:
+
+- an object adapter is deactivated, including when you shut down its communicator: Ice closes its incoming connections;
+  or
+- a communicator is destroyed: Ice closes all its connections.
+
+When it deactivates an object adapter or destroys a communicator, Ice waits for the dispatches in progress to complete,
+but not for the outstanding invocations, which fail with `ObjectAdapterDeactivatedException` or
+`CommunicatorDestroyedException`.
+
+## Closing a Connection from the Application
+
+An application can close a connection it obtained from a proxy with `ice_getConnection` or from the `Current` object of
+a dispatch: `close` closes the connection gracefully, once its outstanding invocations have completed, and `abort`
+aborts it. See [Connection](api:Ice/Connection) in the API reference.
 
 ## See Also
 

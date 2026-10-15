@@ -1,55 +1,41 @@
 ---
 title: Bidirectional Connections
+languages: [cpp, csharp, java, js, python, swift]
 ---
 
 ## Use Cases for Bidirectional Connections
 
-An Ice connection normally allows requests to flow in only one direction. If an application's design requires the server
-to make callbacks to a client, the server usually establishes a new connection to that client in order to send callback
-requests, as shown below:
+By default, requests flow over an Ice connection in one direction: from the client that establishes the connection to
+the server that accepts it. If the server needs to call back the client, it usually establishes a new connection to that
+client to send these callback requests, as shown below:
 
 ![The client opens a connection to send requests to the server. The server opens a separate connection to send callbacks to the client.](/images/ice/3.8/bidirectional-connections/callback1.svg)
 
 _Callbacks in an open network._
 
-Unfortunately, network restrictions often prevent a server from being able to create a separate connection to the
-client, such as when the client resides behind a firewall as shown here:
+A firewall in front of the client, however, typically blocks this connection:
 
 ![The client can open a connection to the server through its firewall, but the firewall blocks a separate incoming callback connection from the server.](/images/ice/3.8/bidirectional-connections/callback2.svg)
 
-In this scenario, the firewall blocks any attempt to establish a connection directly to the client.
-
-For situations such as these, a bidirectional connection offers a solution. Requests may flow in both directions over a
-bidirectional connection, enabling a server to send callback requests to a client over the client's existing connection
-to the server.
-
-There are two ways to make use of a bidirectional connection. First, you can use a
-[Glacier2 router](../../../services/glacier2), in which case bidirectional connections are used automatically. If you do
-not require the functionality offered by Glacier2 or you do not want an intermediary service between clients and
-servers, you can configure bidirectional connections manually.
-
-The remainder of this section discusses manual configuration of bidirectional connections.
+A bidirectional connection solves this: requests flow over it in both directions, so the server can send callbacks over
+the connection the client established.
 
 ## Configuring a Client for Bidirectional Connections
 
 A client needs to perform the following steps in order to configure a bidirectional connection:
 
-1. [Create an object adapter](../../dispatch/creating-an-object-adapter) to receive callback requests. This adapter does
-   not require a name or endpoints if its only purpose is to receive callbacks over bidirectional connections.
-2. Set this object adapter as the default object adapter on the communicator. This means the object adapter will gets
-   associated with new outgoing connections created by the communicator.
+1. [Create an object adapter](../../dispatch/creating-an-object-adapter) to receive callback requests.
+2. Set this object adapter as the default object adapter on the communicator. The communicator associates its default
+   object adapter with the outgoing connections it creates afterward.
 3. [Register the callback object](../../dispatch/object-adapter-activation-and-deactivation) or objects with the object
    adapter.
 
 {% callout type="tip" %}
 
-The object adapter remains a regular object adapter, unaware of the outgoing connection(s) associated with it. These
-connections have no effect on the endpoints and other properties of proxies created by this object adapter.
-
-However, calling `activate` on this object adapter is optional if it's used only for bidirectional and collocated
-dispatches.
-
-We recommend using a dedicated, endpoint-less object adapter for “bidir” dispatches.
+We recommend a dedicated object adapter for the callbacks. Such an object adapter needs no name or endpoints, and you
+don't need to activate it, since it accepts no connection: it only dispatches the callbacks received over the
+bidirectional connections. You can also use an object adapter with endpoints: it then dispatches the requests received
+over its own incoming connections as well as the callbacks.
 
 {% /callout %}
 
@@ -59,55 +45,63 @@ The code below illustrates these steps:
 
 The callback object (`mockAlarmClock` in the code above) will handle incoming requests for identity `alarmClock`.
 
+To set an object adapter on a connection created before you set the default object adapter, or to give a connection a
+different object adapter, call `setAdapter` on this outgoing connection, for example the connection returned by a
+proxy's `ice_getConnection`. A connection without an object adapter rejects incoming requests with
+`ObjectNotExistException`.
+
+These two approaches differ in scope. With a default object adapter, every outgoing connection that the communicator
+creates afterward dispatches the requests it receives to this adapter, so any server the client connects to can send
+callbacks to it. With `setAdapter`, only the connections you choose accept callbacks.
+
 ## Configuring a Server for Bidirectional Connections
 
-A server needs to create or obtain a proxy to the callback object. This proxy is bound to the incoming connection and is
-known as a “fixed” proxy.
+{% iflang langs="cpp,csharp,java,python,swift" %}
 
-A fixed proxy is bound to the connection that created it, and ceases to work once that connection is closed. If the
-connection is closed, the server can no longer make callback requests using that proxy. Any attempt to use the proxy
-again usually results in a `CloseConnectionException`.
+A server sends callbacks over the incoming connection with a _fixed proxy_, a proxy bound to this connection. The
+connection is the `con` member of the `Current` object passed to the operation implementation. You create a fixed proxy
+in one of two ways:
 
-The connection object is accessible as a member of the `Current` parameter supplied to an operation implementation.
-These steps are illustrated in the code below:
+- Call `createProxy` on the connection with the identity of the callback object, as the code below does.
+- Call `ice_fixed` with the connection on a proxy that the client sent, for example a callback proxy passed as an
+  operation argument. The fixed proxy keeps the identity, facet, and other settings of this proxy.
+
+{% /iflang %}
 
 {% language-section name="configuring-a-server-for-bidirectional-connections" /%}
+
+{% iflang langs="cpp,csharp,java,python,swift" %}
+
+A fixed proxy ceases to work once its connection is closed. Ice does not retry an invocation on a fixed proxy: once the
+connection is closed, invocations on the proxy fail with the exception that closed the connection, such as
+`CloseConnectionException` when the client closed it gracefully.
+
+{% /iflang %}
 
 ## Limitations of Bidirectional Connections
 
 Bidirectional connections have certain limitations:
 
 - They can only be configured for connection-oriented transports such as TCP and SSL.
-- Most proxy factory methods are not relevant for a fixed proxy. The proxy is bound to an existing connection, therefore
-  the proxy reflects the connection's configuration. Attempting to change settings such as the proxy's timeout value
-  causes the Ice runtime to throw `FixedProxyException`. Note however that it is legal to configure a fixed proxy for
-  using oneway or twoway invocations.
-- A connection established from a Glacier2 router to a server is not configured for bidirectional use. Only the
-  connection from a client to the router is bidirectional. However, the client must not attempt to manually configure a
-  bidirectional connection to a router, as this is handled internally by the Ice runtime.
+- A fixed proxy is bound to an existing connection: you cannot change the settings that select a connection, such as its
+  endpoints or its router, and you cannot marshal it or convert it to proxy properties. You can still change its
+  invocation mode, for example to oneway.
+
+{% iflang langs="cpp,csharp,java,python,swift" %}
 
 ## Threading Considerations for Bidirectional Connections
 
-An Ice communicator normally creates two [thread pools](../../threading-model) for processing network traffic on
-connections: the client thread pool manages outgoing connections and the server thread pool manages incoming
-connections. All of the object adapters in a server share the same thread pool by default, but an object adapter can
-also be configured to have [its own thread pool](../../threading-model/object-adapter-thread-pools). The default size of
-the client and server thread pools is one.
+Over a bidirectional connection, each side sends requests and dispatches the requests it receives, but the thread pool
+does not depend on the direction of a request: the client thread pool services an outgoing connection, even when the
+callback object adapter has its own thread pool, and the thread pool of the object adapter that accepted the connection
+services an incoming connection. This pool dispatches the requests and processes the replies received over the
+connection; see [Thread Pools](../../threading-model/thread-pools).
 
-The client thread pool processes replies to pending requests. When a client configures an outgoing connection for
-bidirectional requests, the client thread pool also becomes responsible for dispatching callback requests received over
-that connection. Similarly, the server thread pool normally dispatches requests from clients. If a server uses a
-bidirectional connection to send callback requests, then the server thread pool must also process the replies to those
-requests.
-
-You must increase the size of the appropriate thread pool if you need the ability to dispatch multiple requests in
-parallel, or if you need to make [nested two-way invocations](../../threading-model/nested-invocations). For example, a
-client that receives a callback request over a bidirectional connection and makes nested invocations must increase the
-size of the _client_ thread pool.
+{% /iflang %}
 
 ## See Also
 
-- [Glacier2](../../../services/glacier2)
+- [Callbacks through Glacier2](../../../services/glacier2/callbacks-through-glacier2)
 - [Creating an Object Adapter](../../dispatch/creating-an-object-adapter)
 - [Object Adapter Activation and Deactivation](../../dispatch/object-adapter-activation-and-deactivation)
 - [Object Identity](../../object-identity)
