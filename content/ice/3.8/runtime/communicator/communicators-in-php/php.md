@@ -35,8 +35,9 @@ echo "$greeting\n";
 $communicator->destroy(); // optional, see below
 ```
 
-Ice for PHP automatically destroys any communicator that was created during a request. This means a script can usually
-omit the call to `destroy` unless there is an application-specific reason to destroy the communicator explicitly.
+When a PHP request completes, Ice for PHP destroys every communicator that the request created and did not
+[register](#registered-communicators-in-php). This means a script can usually omit the call to `destroy` unless there is
+an application-specific reason to destroy the communicator explicitly.
 
 Although the automatic destruction of communicators is convenient, it is important to consider the performance
 characteristics of this script. Specifically, each execution of the script involves the following activities:
@@ -83,7 +84,7 @@ default property set, respectively. These directives must appear in PHP's config
 ; Snippet from php.ini on Linux
 extension=IcePHP.so
 ice.config=/opt/MyApp/default.cfg
-ice.options="--Ice.Override.Timeout=2000"
+ice.options="--Ice.Trace.Network=1"
 ```
 
 ### Profiles in PHP
@@ -151,11 +152,11 @@ echo "$greeting\n";
 
 ## Registered Communicators in PHP
 
-You can register a communicator to prevent it from being destroyed at the completion of a script. For example, a
-session-based PHP application can create a communicator for each new session and register it for reuse in subsequent
-requests of the same session. Reusing a communicator in this way avoids the overhead associated with creating and
-destroying a communicator in each request. Furthermore, it allows network connections established by the Ice
-communicator to remain open and available for use in another request.
+A registered communicator outlives the request that created it. For example, a session-based PHP application can create
+a communicator for each new session and register it for reuse in subsequent requests of the same session. Reusing a
+communicator in this way avoids the overhead associated with creating and destroying a communicator in each request.
+Furthermore, it allows network connections established by the Ice communicator to remain open and available for use in
+another request.
 
 ### Limitations of Registered Communicators in PHP
 
@@ -171,27 +172,12 @@ communicators is outside the scope of this documentation.
 
 The API for registered communicators consists of three functions:
 
-- `Ice\register($communicator, $name, $expires=0)` Registers a communicator with the given name. On success, the
-  function returns true. If another communicator is already registered with the same name, the function returns false.
-  The `expires` argument specifies a timeout value in minutes; if `expires` is greater than zero, the Ice extension
-  automatically destroys the communicator if it has not been retrieved (via `find`) for the specified number of minutes.
-  The default value (zero) means the communicator never expires, in which case the Ice for PHP extension only destroys
-  the communicator when the current process terminates. It is legal to register a communicator with more than one name.
-  In that case, the most recent value of expires takes precedence.
-
-- `Ice\unregister($name)` Removes the registration for a communicator with the given name. Returns true if a match was
-  found or false otherwise. Calling `Ice\unregister` does not cause the communicator to be destroyed; rather, the
-  communicator is destroyed as soon as all pending requests that are currently using the communicator have completed.
-  Destroying a registered communicator explicitly also removes its registration.
-
-{% callout type="note" %}
-
-In the common situation where you use a single-threaded PHP runtime, `unregister` destroys your communicator
-immediately.
-
-{% /callout %}
-
-- `Ice\find($name)` Retrieves the communicator associated with the given name. Returns `null` if no match is found.
+- `Ice\register($communicator, $name, $expires=0)` Registers a communicator with the given name. Returns false if
+  another communicator is already registered with this name, and true otherwise. You can register the same communicator
+  under several names.
+- `Ice\find($name)` Returns the communicator registered with the given name, or `null` if there is none.
+- `Ice\unregister($name)` Removes the registration with the given name. Returns true if a communicator was registered
+  with this name, and false otherwise.
 
 An application typically uses registered communicators as follows:
 
@@ -210,6 +196,19 @@ if ($communicator === null) {
 Note that communicators consume resources such as threads, sockets, and memory, therefore an application should be
 designed to minimize the number of communicators it registers. Using a suitable expiration timeout prevents registered
 communicators from accumulating indefinitely.
+
+### Lifetime of a Registered Communicator in PHP
+
+Ice for PHP destroys a registered communicator when one of the following happens:
+
+- **It expires.** When `$expires` is greater than zero, Ice for PHP destroys the communicator and removes all its
+  registrations once no script has retrieved it with `Ice\find` for `$expires` minutes. Each call to `Ice\register`
+  replaces the expiration time of the communicator, and the default value, 0, means the communicator never expires.
+- **You remove its last registration.** After `Ice\unregister` removes the last name of a communicator, Ice for PHP
+  destroys the communicator once every request that created it or retrieved it with `Ice\find` has completed.
+- **The process terminates.**
+
+Destroying a registered communicator yourself also removes all its registrations.
 
 ### Security Considerations for Registered Communicators in PHP
 
