@@ -207,11 +207,12 @@ Limits the size of the Ice protocol messages this adapter receives, in KiB (1024
 message, including the protocol header; for a compressed message, it also applies to the decompressed size. If not
 defined, the adapter uses the communicator's [Ice.MessageSizeMax](../ice-properties) limit.
 
-A value of `0` or less selects the maximum supported size of 2,147,483,647 bytes. A positive value must be at most
-2,097,151 KiB.
+A value of `0` or less selects the largest supported size; a positive value must be at most 2,097,151 KiB (about 2 GiB).
 
-This property is logically a connection property, and only applies to messages received over network connections created
-by this object adapter.
+This limit applies to the messages this object adapter receives over the connections it accepts. It does not apply to
+the requests the adapter receives over an outgoing connection associated with it
+([bidirectional connections](../../runtime/connection-management/bidirectional-connections)): the communicator's
+`Ice.MessageSizeMax` limits those.
 
 {% /property-description %}
 
