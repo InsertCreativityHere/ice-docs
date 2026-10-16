@@ -88,8 +88,8 @@ and enumeration, including sequence elements and dictionary keys and values.
 ## Bundling
 
 In Ice 3.7, you bundled your generated code with the Gulp Ice Builder, driven by the `js:module` file metadata
-directive. Ice 3.8 has no bundler of its own: bundle your application, the `@zeroc/ice` package and your generated code
-with a standard JavaScript bundler such as Vite, Rollup, webpack or esbuild. The `js:module` directive remains, and
+directive. Ice 3.8 has no bundler of its own: bundle your application, the `@zeroc/ice` package, and your generated code
+with a standard JavaScript bundler such as Vite, Rollup, webpack, or esbuild. The `js:module` directive remains, and
 controls how other generated code imports your generated code, as described in
 [Slice Metadata Directives](../slice/slice-metadata-directives).
 
@@ -100,8 +100,9 @@ your build. Install it as a development dependency:
 npm install --save-dev @zeroc/slice2js
 ```
 
-and add the plug-in to the configuration of your bundler; see the
-[@zeroc/slice2js README](https://www.npmjs.com/package/@zeroc/slice2js) for the plug-in options.
+and add the plug-in to the configuration of your bundler; see
+[Compiling Slice Files During the Build](../slice/using-the-slice-compiler?lang=js#compiling-slice-files-during-the-build)
+and the [@zeroc/slice2js README](https://www.npmjs.com/package/@zeroc/slice2js).
 
 ## Node.js and Browsers
 
