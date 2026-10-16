@@ -77,8 +77,8 @@ pointer is pointing. Marshaling an instance means we are encoding the data membe
 
 ### Class Instance Encoding Version 1.0
 
-Classes are marshaled as a number of pairs containing a type ID and a [slice](../basic-data-encoding) (one pair for each
-level of the inheritance hierarchy) and marshaled in derived-to-base order. Only data members are marshaled — no
+Classes are marshaled as a number of pairs containing a type ID and a [slice](../data-encoding-for-slices) (one pair for
+each level of the inheritance hierarchy) and marshaled in derived-to-base order. Only data members are marshaled — no
 information is sent that would relate to operations. Each marshaled class instance is preceded by a (non-zero) positive
 integer that provides an identity for the instance. The sender assigns this identity during marshaling such that each
 marshaled instance has a different identity. The receiver uses that identity to correctly reconstruct graphs of classes.
@@ -100,17 +100,17 @@ nil.
 ### Class Instance Encoding Version 1.1
 
 The leading byte of a class instance is a [size](../basic-data-encoding) value of 1. Following this byte is a collection
-of [slices](../basic-data-encoding) arranged in derived-to-base order. Only data members are marshaled — no information
-is sent that would relate to operations. The initial (most-derived) slice always includes a [type ID](./class-type-ids)
-that may be encoded as a string or as a numeric value, as specified by the flags that begin each slice. Depending on the
-[format](../../slice/user-defined-types/classes/slicing-values-and-exceptions) being used, subsequent slices may or may
-not include a type ID.
+of [slices](../data-encoding-for-slices) arranged in derived-to-base order. Only data members are marshaled — no
+information is sent that would relate to operations. The initial (most-derived) slice always includes a
+[type ID](./class-type-ids) that may be encoded as a string or as a numeric value, as specified by the flags that begin
+each slice. Depending on the [format](../../slice/user-defined-types/classes/slicing-values-and-exceptions) being used,
+subsequent slices may or may not include a type ID.
 
 Each slice consists of a leading byte representing the slice flags, an optional type ID, an optional slice size, the
 required members for that slice in order of declaration, and the
 [optional members](../data-encoding-for-optional-values) of that slice. The sender must set the appropriate
-[slice flags](../basic-data-encoding) to indicate whether the slice includes a type ID, size, and optional data members,
-and whether this is the last slice of the instance. The compact format only includes a type ID in the initial
+[slice flags](../data-encoding-for-slices) to indicate whether the slice includes a type ID, size, and optional data
+members, and whether this is the last slice of the instance. The compact format only includes a type ID in the initial
 (most-derived) slice and omits the slice size, as shown in the following diagram:
 
 ![The compact classes format starts with identity marker 1. The most-derived slice contains slice flags, a type ID, required members, and optional members when needed. Subsequent slices omit the type ID.](/images/ice/3.8/data-encoding-for-classes/compact-format.svg)
@@ -128,13 +128,14 @@ references in that slice. The table is an array of instances encoded using the i
 indicates the number of elements in the table; each element is either an instance ID (if the instance has already been
 encoded within the current encapsulation), or the instance itself denoted by a leading size of 1. The indirection table
 appears in the encoding immediately following the required and optional data members, _but is not included in the byte
-count denoted by the slice size_. To skip a slice for an unknown type, the receiver can advance the input stream by the
-number of bytes specified in the slice size, but then must process all references or instances in the indirection table,
-if one is present.
+count denoted by the slice size_. To skip a slice for an unknown type, the receiver reads the slice size _b_, skips the
+remaining _b-4_ bytes, and then must process all references or instances in the indirection table, if one is present.
 
 To support [slice preservation](../../slice/user-defined-types/classes/slicing-values-and-exceptions) for an instance,
 the receiver must temporarily retain the slices of any unknown derived types, and also be able to reconstruct the
-indirection table in its original order for each of these slices in case the instance is later remarshaled.
+indirection table in its original order for each of these slices in case the instance is later remarshaled. Because a
+preserved indirection table can hold the only reference to an instance, the receiver must also retain every instance
+that such a table references, even an instance none of whose type IDs it recognizes.
 
 ## See Also
 

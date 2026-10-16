@@ -18,3 +18,25 @@ let adapter = try communicator.createObjectAdapterWithEndpoints(
 ```
 
 {% /language-section %}
+
+{% language-section name="using-the-ssl-transport-4" %}
+
+```config
+# The server's certificate file.
+IceSSL.CertFile=server.p12
+IceSSL.Password=password
+
+# Turn on security logging/tracing.
+IceSSL.Trace.Security=1
+```
+
+{% /language-section %}
+
+{% language-section name="using-the-ssl-transport-5" %}
+
+```config
+# The trusted certificate authorities used to validate peer certificates.
+IceSSL.CAs=ca_cert.pem
+```
+
+{% /language-section %}

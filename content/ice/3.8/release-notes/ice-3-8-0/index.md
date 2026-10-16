@@ -269,9 +269,9 @@ We added a new `ice2slice` compiler that converts Slice files in the `.ice` form
 The Slice compilers are no longer packaged all together in their own package. Each Slice compiler is now usually
 included in its associated language package.
 
-For example, the Slice to C# compiler binaries (`slice2cs`) for all platforms are included in the NuGet package
-`ZeroC.Ice.Slice.Tools`. Likewise, the Slice to Java compiler (`slice2java`) for all platforms is included in the
-`com.zeroc.slice-tools` Gradle plugin.
+For example, the NuGet package `ZeroC.Ice.Slice.Tools` includes the Slice to C# compiler (`slice2cs`) for Linux (x64 and
+arm64), macOS (arm64), and Windows (x64). Likewise, the `com.zeroc.slice-tools` Gradle plugin includes the Slice to Java
+compiler (`slice2java`) for the same platforms.
 
 On Linux, the Slice to C++ compiler is included in the Ice-C++ dev or devel package depending on the distribution. And
 the Slice to PHP compiler (`slice2php`) is included directly in the Ice-PHP package.
@@ -482,8 +482,8 @@ details.
 
 The Ice for JavaScript NPM package has been converted to a scoped package named `@zeroc/ice`.
 
-The package includes a `slice2js` bin script that executes the native `slice2js` compiler for the current platform, the
-`slice2js` native binaries for Linux, macOS, and Windows are included in the `@zeroc/ice` NPM package.
+The package includes the native `slice2js` compiler for Linux (x64 and arm64), macOS (arm64), and Windows (x64), and a
+`slice2js` bin script that runs the compiler for the current platform.
 
 The NPM package is now compatible with Node.js and Browsers, and there is no need to use a separate bundle when
 developing applications targeting a web browser.

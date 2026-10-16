@@ -1,2 +1,8 @@
 include:
   - scroll-viewport-redirects.yaml
+
+# Pages removed from this site, and the page each goes to.
+permanent:
+  'services/icegrid/application-distribution/ansible': 'services/icegrid/application-distribution'
+  'background-servers/windows-services/manually-installing-a-service-as-a-windows-service': 'background-servers/windows-services/using-the-ice-service-installer'
+  'runtime/invocation/proxy-defaults-and-overrides': 'runtime/invocation/proxy-defaults'

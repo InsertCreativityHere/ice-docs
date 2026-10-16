@@ -14,15 +14,12 @@ interface Example
 }
 ```
 
-The `["deprecated"]` metadata directive causes the compiler to emit code that generates a warning if you compile
-application code that uses a deprecated feature. This is useful if you want to remove a feature from a Slice definition
-but do not want to cause a hard error.
+The message that follows the colon is optional, and says why the definition is deprecated or what to use instead. You
+can apply the `["deprecated"]` metadata directive to interfaces, classes, exceptions, structures, enumerations,
+enumerators, sequences, dictionaries, constants, operations, and fields.
 
-The message that follows the colon is optional; if you omit the message and use `["deprecated"]`, the Slice compilers
-insert a default message into the generated code.
-
-You can apply the `["deprecated"]` metadata directive to most Slice constructs, including operations, interfaces,
-structures and classes.
+The Slice compilers warn about a Slice definition that uses a deprecated definition, such as an operation whose
+parameter type is deprecated.
 
 ## See Also
 

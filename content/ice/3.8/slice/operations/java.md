@@ -174,7 +174,9 @@ method.
 If you throw an arbitrary Java exception (such as a `IllegalArgumentException`), the Ice runtime catches the exception
 and then returns an `UnknownException` to the client.
 
-If you throw an Ice runtime exception, such as `MarshalException`, the client receives an `UnknownLocalException`.
+If you throw a [dispatch exception](../../runtime/local-and-dispatch-exceptions#dispatch-exceptions), such as
+`ObjectNotExistException`, the client receives the same exception. If you throw any other Ice local exception, such as
+`MarshalException`, the client receives an `UnknownLocalException`.
 
 The server-side Ice runtime does not validate user exceptions thrown by an operation implementation to ensure they are
 compatible with the operation's Slice definition. Rather, Ice returns the user exception to the client, where the
@@ -197,8 +199,8 @@ or asynchronously.
 
 If an invocation throws an exception, the exception can be obtained from the future in several ways:
 
-- Call `get` on the future; `get` throws `CompletionException` with the actual exception available via `getCause()`
-- Call `join` on the future; `join` throws `ExecutionException` with the actual exception available via `getCause()`
+- Call `get` on the future; `get` throws `ExecutionException` with the actual exception available via `getCause()`
+- Call `join` on the future; `join` throws `CompletionException` with the actual exception available via `getCause()`
 - Use chaining methods such as `exceptionally`, `handle` or `whenComplete` to execute custom actions
 
 The exception is provided by the future, even if the actual error condition for the exception was encountered during the
@@ -206,12 +208,14 @@ call to the `Async` method ("on the way out"). The advantage of this behavior is
 with the code that handles the future (instead of being present twice, once where the `Async` method is called, and
 again where the future is handled).
 
-There are two exceptions to this rule:
+There are three exceptions to this rule:
 
 - if you destroy the communicator and then make an asynchronous invocation, the `Async` method throws
   `CommunicatorDestroyedException` directly.
-- a call to an `Async` method can throw `TwowayOnlyException`. An `Async` method throws this exception if you call an
-  operation that has a return value or out-parameters on a oneway proxy.
+- if you use a oneway proxy to call an operation that has a return value, out-parameters, or an exception specification,
+  the `Async` method throws `TwowayOnlyException` directly.
+- if you use a twoway proxy to call an operation with the [`oneway`](../slice-metadata-directives#oneway) metadata, the
+  `Async` method throws `OnewayOnlyException` directly.
 
 ### `InvocationFuture` Class
 
@@ -314,11 +318,10 @@ transport. The future completes exceptionally if an error occurs before the requ
 
 ### Flow Control
 
-Asynchronous method invocations never block the thread that calls the asynchronous proxy method. The Ice runtime checks
-to see whether it can write the request to the local transport. If it can, it does so immediately in the caller's
-thread. (In that case, `InvocationFuture.sentSynchronously` returns true.) Alternatively, if the local transport does
-not have sufficient buffer space to accept the request, the Ice runtime queues the request internally for later
-transmission in the background. (In that case, `InvocationFuture.sentSynchronously` returns false.)
+Asynchronous method invocations never block the thread that calls the asynchronous proxy method. If the local transport
+can accept the request without blocking, the Ice runtime writes the request in the caller's thread, and
+`InvocationFuture.sentSynchronously` returns true. Otherwise, the Ice runtime queues the request internally for later
+transmission in the background, and `sentSynchronously` returns false.
 
 This creates a potential problem: if a client sends many asynchronous requests at the time the server is too busy to
 keep up with them, the requests pile up in the client-side run time until, eventually, the client runs out of memory.
@@ -595,18 +598,8 @@ public interface ExamplePrx extends com.zeroc.Ice.ObjectPrx {
 
 ### Null Parameters
 
-Some Slice types naturally have "empty" or "not there" semantics. Specifically, sequences, dictionaries, and strings all
-can be `null`, but the corresponding Slice types do not have the concept of a null value. To make life with these types
-easier, whenever you pass `null` as a parameter or return value of type sequence, dictionary, or string, the Ice run
-time automatically sends an empty sequence, dictionary, or string to the receiver.
-
-This behavior is useful as a convenience feature: especially for deeply-nested data types, fields that are sequences,
-dictionaries, or strings automatically arrive as an empty value at the receiving end. This saves you having to
-explicitly initialize, for example, every string element in a large sequence before sending the sequence in order to
-avoid `NullPointerException`. Note that using null parameters in this way does _not_ create null semantics for Slice
-sequences, dictionaries, or strings. As far as the object model is concerned, these do not exist (only _empty_
-sequences, dictionaries, and strings do). For example, whether you send a string as `null` or as an empty string makes
-no difference to the receiver: either way, the receiver sees an empty string.
+Slice strings, sequences, and dictionaries have no null value. When you pass `null` for one of these types, whether as a
+parameter, a return value, a field, or a sequence element, Ice sends an empty string, sequence, or dictionary.
 
 ### Optional Parameters
 

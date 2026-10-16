@@ -68,6 +68,9 @@ of
 
 This SSL configuration applies to all SSL incoming connections accepted by that object adapter.
 
+When you set these options, the SSL transport uses them as the SSL configuration for these connections; it does not use
+the `IceSSL` properties.
+
 {% /language-section %}
 
 {% language-section name="using-the-ssl-transport-4" %}
@@ -76,11 +79,6 @@ This SSL configuration applies to all SSL incoming connections accepted by that 
 # The server's certificate file.
 IceSSL.CertFile=server.p12
 IceSSL.Password=password
-
-# The name of the keychain in which to import the server's certificate,
-# and the keychain password (macOS and iOS only).
-IceSSL.Keychain=server.keychain
-IceSSL.KeychainPassword=password
 
 # Turn on security logging/tracing.
 IceSSL.Trace.Security=1
@@ -91,7 +89,7 @@ IceSSL.Trace.Security=1
 {% language-section name="using-the-ssl-transport-5" %}
 
 ```config
-# The trusted certificated authorities used to validate peer certificates.
+# The trusted certificate authorities used to validate peer certificates.
 IceSSL.CAs=ca_cert.pem
 ```
 

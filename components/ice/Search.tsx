@@ -44,6 +44,11 @@ export function Search({ version }: { version: DocsVersion }) {
   );
   const records = index?.key === version.path ? index.pages : null;
 
+  // The header controls render only after mount, so `navigator` exists here.
+  const hotkey = /mac|iphone|ipad|ipod/i.test(navigator.userAgent)
+    ? '⌘K'
+    : 'Ctrl+K';
+
   // ⌘K / Ctrl-K from anywhere. The modal dialog closes itself on Escape.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -123,7 +128,7 @@ export function Search({ version }: { version: DocsVersion }) {
           // The results may have changed with the mapping since it closed.
           setSelected(0);
         }}
-        className="flex shrink-0 items-center gap-2 rounded-md border border-black/15 px-2 py-1 text-sm opacity-70 hover:opacity-100 lg:px-3 dark:border-white/20"
+        className="flex h-8 shrink-0 items-center gap-2 rounded-md border border-black/15 px-2 text-sm opacity-70 focus-ring hover:opacity-100 focus-visible:opacity-100 lg:px-3 dark:border-white/20"
       >
         <svg
           width="14"
@@ -140,9 +145,9 @@ export function Search({ version }: { version: DocsVersion }) {
             strokeLinecap="round"
           />
         </svg>
-        <span className="hidden lg:inline">Search</span>
+        <span className="sr-only lg:not-sr-only">Search</span>
         <kbd className="hidden rounded border border-black/15 px-1 text-[10px] xl:inline dark:border-white/20">
-          ⌘K
+          {hotkey}
         </kbd>
       </button>
 
@@ -178,7 +183,7 @@ export function Search({ version }: { version: DocsVersion }) {
           }}
           placeholder={`Search the ${version.title} documentation…`}
           aria-label="Search query"
-          className="w-full border-b border-black/10 bg-transparent px-4 py-3.5 text-base outline-none dark:border-white/10"
+          className="w-full border-b border-black/10 bg-transparent px-4 py-3.5 text-base focus-ring focus-visible:rounded-md dark:border-white/10"
         />
 
         <div className="overflow-y-auto">
@@ -196,7 +201,7 @@ export function Search({ version }: { version: DocsVersion }) {
               type="button"
               onMouseEnter={() => setSelected(i)}
               onClick={() => go(record)}
-              className={`flex w-full flex-col items-start gap-0.5 px-4 py-2.5 text-left ${
+              className={`flex w-full flex-col items-start gap-0.5 px-4 py-2.5 text-left focus-ring focus-visible:rounded-md ${
                 i === selected ? 'bg-blue-600/10' : ''
               }`}
             >

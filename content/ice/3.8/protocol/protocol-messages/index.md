@@ -7,7 +7,7 @@ The Ice protocol uses five messages:
 - Request (from client to server)
 - Batch request (from client to server)
 - Reply (from server to client)
-- Validate connection (from server to client)
+- Validate connection (from server to client to establish the connection, then from either side as a heartbeat)
 - Close connection (client to server or server to client)
 
 Of these messages, validate and close connection only apply to connection-oriented transports such as `tcp`.
@@ -38,17 +38,13 @@ The message header fields are described in the following table.
 | **Field**           | **Description**                                                                                                |
 | ------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `magic`             | A four-byte magic number consisting of the ASCII-encoded values of 'I', 'c', 'e', 'P' (0x49, 0x63, 0x65, 0x50) |
-| `protocolMajor`     | The Ice protocol major version number                                                                          |
-| `protocolMinor`     | The Ice protocol minor version number                                                                          |
-| `encodingMajor`     | The Ice encoding major version number                                                                          |
-| `encodingMinor`     | The Ice encoding minor version number                                                                          |
+| `protocolMajor`     | The Ice protocol major version number, always 1                                                                |
+| `protocolMinor`     | The Ice protocol minor version number, always 0                                                                |
+| `encodingMajor`     | The Ice encoding major version number, always 1                                                                |
+| `encodingMinor`     | The Ice encoding minor version number, always 0                                                                |
 | `messageType`       | The message type                                                                                               |
 | `compressionStatus` | The [compression](../protocol-compression) status of the message                                               |
 | `messageSize`       | The size of the message in bytes, including the header                                                         |
-
-The encoding version number represents the version of the Ice encoding used to encode fields of the Ice protocol
-messages, such as `messageSize`. This encoding version depends on the protocol version and is therefore redundant. For
-Ice protocol 1.0, the encoding version is always 1.0.
 
 The valid message types are shown in the following table.
 
@@ -82,20 +78,23 @@ struct RequestData
 
 The request fields are described in the following table.
 
-| **Field**   | **Description**                                                                                  |
-| ----------- | ------------------------------------------------------------------------------------------------ |
-| `requestId` | The request identifier                                                                           |
-| `id`        | The [object identity](../../runtime/object-identity)                                             |
-| `facet`     | The [facet](../../runtime/facets) name (zero- or one-element sequence)                           |
-| `operation` | The operation name                                                                               |
-| `mode`      | A byte representation of `Ice::OperationMode` (`0`=normal, `2`=idempotent)                       |
-| `context`   | The invocation [context](../../runtime/invocation/request-contexts)                              |
-| `params`    | The [encapsulated](../../encoding/basic-data-encoding) input parameters, in order of declaration |
+| **Field**   | **Description**                                                                                                                                 |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `requestId` | The request identifier                                                                                                                          |
+| `id`        | The [object identity](../../runtime/object-identity)                                                                                            |
+| `facet`     | The [facet](../../runtime/facets) name (zero- or one-element sequence)                                                                          |
+| `operation` | The operation name                                                                                                                              |
+| `mode`      | A byte representation of `Ice::OperationMode`: `0` = `Normal`, `1` = `Nonmutating` (deprecated, equivalent to `Idempotent`), `2` = `Idempotent` |
+| `context`   | The invocation [context](../../runtime/invocation/request-contexts)                                                                             |
+| `params`    | The [encapsulated](../../encoding/basic-data-encoding) input parameters                                                                         |
+
+The `params` encapsulation holds the required input parameters in order of declaration, followed by the
+[optional](../../encoding/data-encoding-for-optional-values) input parameters sorted by tag.
 
 The request identifier zero (`0`) is reserved for use in
 [oneway](../../runtime/invocation/invocation-mode/oneway-invocations) requests and indicates that the server must not
-send a reply to the client. A non-zero request identifier must uniquely identify the request on a connection, and must
-not be reused while a reply for the identifier is outstanding.
+send a reply to the client. The sender gives each of its outstanding twoway requests on the connection a distinct
+non-zero request identifier.
 
 The `facet` field has either zero elements or one element. An empty sequence denotes the default facet, and a
 one-element sequence provides the facet name in its first field. If a receiver receives a request with a `facet` field
@@ -122,14 +121,14 @@ struct BatchRequestData
 
 The batch request fields are described in the following table.
 
-| **Field**   | **Description**                                                        |
-| ----------- | ---------------------------------------------------------------------- |
-| `id`        | The [object identity](../../runtime/object-identity)                   |
-| `facet`     | The [facet](../../runtime/facets) name (zero- or one-element sequence) |
-| `operation` | The operation name                                                     |
-| `mode`      | A byte representation of `Ice::OperationMode`                          |
-| `context`   | The request [context](../../runtime/invocation/request-contexts)       |
-| `params`    | The encapsulated input parameters, in order of declaration             |
+| **Field**   | **Description**                                                                         |
+| ----------- | --------------------------------------------------------------------------------------- |
+| `id`        | The [object identity](../../runtime/object-identity)                                    |
+| `facet`     | The [facet](../../runtime/facets) name (zero- or one-element sequence)                  |
+| `operation` | The operation name                                                                      |
+| `mode`      | A byte representation of `Ice::OperationMode`, as in a [request](#request-message-body) |
+| `context`   | The request [context](../../runtime/invocation/request-contexts)                        |
+| `params`    | The encapsulated input parameters                                                       |
 
 Note that no request ID is necessary for batch requests because only oneway invocations can be batched.
 
@@ -152,29 +151,65 @@ struct ReplyData
 ```
 
 The first four bytes of a reply message body contain a request ID. The request ID matches an outgoing request and allows
-the requester to associate the reply with the [original request](./).
+the requester to associate the reply with the [original request](./). The requester ignores a reply whose request ID
+does not match that of an outstanding request, such as the reply to a request that timed out.
 
-The byte following the request ID indicates the status of the request. The reply payload follows the status byte; its
-format depends on the status value. The possible reply status values are shown in the table below (most of these values
-correspond to [common exceptions](../../runtime/local-and-dispatch-exceptions)).
+The byte following the request ID indicates the status of the request, and the reply payload follows the status byte.
+The table below shows the possible reply status values; the first column gives the corresponding
+[ReplyStatus](api:Ice/ReplyStatus) enumerator.
 
-| **Reply status**            | **Numeric value** | **Description**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| --------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ok                          | `0`               | The dispatch completed successfully. The reply payload is an [encapsulation](../../encoding/basic-data-encoding) containing out-parameters (in the order of declaration) followed by the return value of the operation, encoded according to their types as specified by the [Ice Encoding](../../encoding). If an operation declares a `void` return type and no out-parameters, an empty encapsulation is encoded.                                                                                                                                                                                                                                                                                             |
-| User exception              | `1`               | The dispatch completed with a user exception. The reply payload is an [encapsulation](../../encoding/basic-data-encoding) containing the [encoded user exception](../../encoding/data-encoding-for-exceptions).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Object does not exist       | `2`               | The dispatch completed with an `ObjectNotExistException`. The reply payload is the following Slice 1.0-encoded structure (it's not enclosed in an encapsulation): `struct RequestFailedData { Ice::Identity id; Ice::StringSeq facet; string operation; }` where `id` is the object identity of the target object, `facet` is the optional facet of the target object, and `operation` is the operation name. The `facet` field has either zero elements or one element. An empty sequence denotes the default facet, and a one-element sequence provides the facet name in its first field. If a receiver receives a reply with a `facet` field with more than one element, it must throw a `MarshalException`. |
-| Facet does not exist        | `3`               | The dispatch completed with a `FacetNotExistException`. The reply payload is the same as for reply status 2.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| Operation does not exist    | `4`               | The dispatch completed with an `OperationNotExistException`. The reply payload is the same as for reply status 2.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Unknown Ice local exception | `5`               | The dispatch completed with an exception defined in local Slice. The reply payload is an Ice 1.0-encoded string that describes the exception.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| Unknown Ice user exception  | `6`               | The dispatch completed with an exception defined in Slice that does not match any exception in the operation's exception specification. The reply payload is an Ice 1.0-encoded string that describes the exception.Ice does not enforce exception specifications on the server-side: Ice always encodes a Slice-defined exception in a reply status = 1 reply. The conversion into an `UnknownUserException` (if appropriate) is performed by the client-side generated code.                                                                                                                                                                                                                                   |
-| Unknown exception           | `7`               | The dispatch completed with another type of exception. The reply payload is an Slice 1.0-encoded string that describes the exception.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Invalid data                | `8`               | The dispatch failed because the request payload could not be unmarshaled. The reply payload is an Ice 1.0-encoded string that describes the exception.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Unauthorized                | `9`               | The caller is not authorized to access the requested resource. The reply payload is an Ice 1.0-encoded string that describes the exception.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| Other                       | `10` to `255`     | The dispatch failed for some other reason.The reply payload is an Ice 1.0-encoded string that describes the exception.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **Reply status**        | **Numeric value** | **Payload**                                                                  | **Description**                                                                                                                                                         |
+| ----------------------- | ----------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Ok`                    | `0`               | [Encapsulation containing the results](#ok-reply-payload)                    | The dispatch completed successfully.                                                                                                                                    |
+| `UserException`         | `1`               | [Encapsulation containing the user exception](#user-exception-reply-payload) | The dispatch completed with a Slice user exception.                                                                                                                     |
+| `ObjectNotExist`        | `2`               | [`RequestFailedData`](#request-failed-reply-payload)                         | The dispatch could not find an implementation for the target object.                                                                                                    |
+| `FacetNotExist`         | `3`               | [`RequestFailedData`](#request-failed-reply-payload)                         | The dispatch found an implementation for the target object but could not find the requested facet.                                                                      |
+| `OperationNotExist`     | `4`               | [`RequestFailedData`](#request-failed-reply-payload)                         | The dispatch found an implementation for the target object but could not find the requested operation.                                                                  |
+| `UnknownLocalException` | `5`               | `string`                                                                     | The dispatch failed with an Ice local exception.                                                                                                                        |
+| `UnknownUserException`  | `6`               | `string`                                                                     | The dispatch failed with a Slice user exception that does not conform to the exception specification of the operation.                                                  |
+| `UnknownException`      | `7`               | `string`                                                                     | The dispatch failed with some other exception (neither an Ice local exception nor a Slice user exception).                                                              |
+| `InvalidData`           | `8`               | `string`                                                                     | The dispatch failed because the request payload could not be unmarshaled. It is typically due to a mismatch in the Slice definitions used by the client and the server. |
+| `Unauthorized`          | `9`               | `string`                                                                     | The caller is not authorized to access the requested resource.                                                                                                          |
+| `NotSupported`          | `10`              | `string`                                                                     | The dispatch failed because the request requires a feature that the server or the target servant does not support.                                                      |
+|                         | `11` to `255`     | `string`                                                                     | The dispatch failed for some other reason.                                                                                                                              |
+
+Only the payloads of reply statuses 0 and 1 are [encapsulations](../../encoding/basic-data-encoding); the
+`RequestFailedData` and `string` payloads follow the status byte directly.
+
+### Ok Reply Payload
+
+For reply status 0, the reply payload is an encapsulation that holds the required out-parameters in order of
+declaration, followed by the return value if it is required, followed by the
+[optional](../../encoding/data-encoding-for-optional-values) out-parameters and optional return value sorted by tag. If
+an operation declares a `void` return type and no out-parameters, the encapsulation is empty.
+
+### User Exception Reply Payload
+
+For reply status 1, the reply payload is an encapsulation that holds the
+[encoded user exception](../../encoding/data-encoding-for-exceptions).
+
+### Request Failed Reply Payload
+
+For reply statuses 2, 3, and 4, the reply payload is the following structure:
+
+```slice
+struct RequestFailedData
+{
+    Ice::Identity id;
+    Ice::StringSeq facet;
+    string operation;
+}
+```
+
+`id`, `facet`, and `operation` hold the identity, facet, and operation name of the target of the request. As in a
+[request](#request-message-body), `facet` has either zero elements or one element.
 
 ## Validate Connection Message
 
-A server sends a validate connection message when it receives a new connection.
+A server sends a validate connection message when it accepts a new connection, to indicate that it is ready to receive
+requests: the client must not send any message on this connection before it receives the validate connection message.
+This message also confirms to the client that the server is indeed an Ice server and not another type of server reached
+by accident.
 
 {% callout type="note" %}
 
@@ -182,24 +217,9 @@ Validate connection messages are only used for connection-oriented transports.
 
 {% /callout %}
 
-The message indicates that the server is ready to receive requests; the client must not send any messages on the
-connection until it has received the validate connection message from the server. No reply to the message is expected by
-the server.
-
-The purpose of the validate connection message is two-fold:
-
-- It confirms to the client that the server is indeed an Ice server and not another type of server reached by accident.
-- It prevents the client from writing a request message to its local transport buffers until after the server has
-  acknowledged that it can actually process the request. This avoids a race condition caused by the server's TCP/IP
-  stack accepting connections in its backlog while the server is in the process of shutting down: if the client were to
-  send a request in this situation, the request would be lost but the client could not safely re-issue the request
-  because that might violate at-most-once semantics. The validate connection message guarantees that a server is not in
-  the middle of shutting down when the server's TCP/IP stack accepts an incoming connection and so avoids the race
-  condition.
-
 {% callout type="note" %}
 
-Validate connection messages may also be sent at any time by either side as a heartbeat.
+After the client receives this message, either side can also send validate connection messages as a heartbeat.
 
 {% /callout %}
 
@@ -220,58 +240,36 @@ Close connection messages are only used for connection-oriented transports.
 The [message header](#message-header) comprises the entire close connection message. The
 [compression](../protocol-compression) status of a close connection message is always `0`.
 
-Either client or server can initiate connection closure.
+Either side of a connection can initiate a graceful connection closure. The side that initiates the closure (the
+initiator) proceeds as follows:
 
-This means that connection closure can be initiated at will by either end of a connection; most importantly, no state is
-associated with a connection as far as the object model or application semantics are concerned.
+1. The initiator stops sending requests to the peer, and discards any request or batch request it receives from now on,
+   without dispatching it.
+2. The initiator waits until its outstanding invocations on the connection have completed, and until the dispatch of all
+   the requests it accepted on the connection has completed and it has sent their replies.
+3. The initiator sends a close connection message.
+4. The initiator waits for the peer to close the connection, then closes the connection. If the peer does not close the
+   connection within the
+   [close timeout](../../property-reference/ice-connection-properties#ice.connection.name.closetimeout), the initiator
+   aborts the connection.
 
-The client side can close a connection whenever no reply for a request is outstanding on the connection. The sequence of
-events is:
+The peer that receives the close connection message (the receiver) closes the connection.
 
-1. The client sends a close connection message.
-2. The client closes the writing end of the connection.
-3. The server responds to the client's close connection message by closing the connection.
+Because of steps 1 and 2, the receiver can re-issue its outstanding requests on a new connection without violating
+[at-most-once semantics](../../slice/operations#idempotent-operations). Ice retries these requests as described in
+[Automatic Retries](../../runtime/invocation/automatic-retries), except for requests sent with a fixed proxy, which is
+bound to the closed connection.
 
-The server side can close a connection whenever no operation invocation is in progress that was invoked via that
-connection. This guarantees that the server will not violate
-[at-most-once semantics](../../runtime/invocation/automatic-retries): an operation, once invoked in a servant, is
-allowed to complete and its results are returned to the client. Note that the server can close a connection even after
-it has received a request from the client, provided that the request has not yet been passed to a servant. In other
-words, if the server decides that it wants to close a connection, the sequence of events is:
+## Connection Abort
 
-1. The server discards all incoming requests on the connection.
-2. The server waits until all still executing requests have completed and their results have been returned to the
-   client.
-3. The server sends a close connection message to the client.
-4. The server closes its writing end of the connection.
-5. The client responds to the server's close connection message by closing both its reading and writing ends of the
-   connection.
-6. If the client has outstanding requests at the time it receives the close connection message, it re-issues these
-   requests on a new connection. Doing so is guaranteed not to violate at-most-once semantics because the server
-   guarantees not to close a connection while requests are still in progress on the server side.
+Either side can abort a connection at any time: it closes the connection without sending a close connection message. Ice
+aborts a connection when it detects a violation of the protocol rules, such as a message with a bad magic number, when
+it receives a message larger than its [message size limit](../../property-reference/ice-properties#ice.messagesizemax),
+or when the connection does not receive any bytes for longer than the
+[idle timeout](../../runtime/connection-management/connection-closure#the-idle-check).
 
-## Protocol State Machine
-
-From a client's perspective, the Ice protocol behaves according to the state machine shown below:
-
-![Ice protocol state machine from inactive through active and graceful close to the final closed state.](/images/ice/3.8/protocol-messages/protocol-state-machine.svg)
-
-_Protocol state machine._
-
-To summarize, a new connection is inactive until a [validate connection](./) message has been received by the client, at
-which point the active state is entered. The connection remains in the active state until it is shut down, which can
-occur when there are no more proxies using the connection, or after the connection has been idle for a while. At this
-point, the connection is [gracefully closed](../../runtime/connection-management/connection-closure), meaning that a
-[close connection](./) message is sent, and the connection is closed.
-
-## Disorderly Connection Closure
-
-Any violation of the protocol or encoding rules results in a disorderly connection closure: the side of the connection
-that detects a violation unceremoniously closes it (without sending a close connection message or similar). There are
-many potential error conditions that can lead to disorderly connection closure; for example, the receiver might detect
-that a message has a bad magic number or incompatible version, receive a reply with an ID that does not match that of an
-outstanding request, receive a validate connection message when it should not, or find illegal data in a request (such
-as a negative size, or a size that disagrees with the actual data that was unmarshaled).
+With a datagram transport such as `udp`, the receiver discards a datagram that violates the protocol rules and keeps
+receiving datagrams.
 
 ## See Also
 

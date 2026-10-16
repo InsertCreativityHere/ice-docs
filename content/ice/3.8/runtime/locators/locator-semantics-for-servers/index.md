@@ -1,5 +1,11 @@
 ---
 title: Locator Semantics for Servers
+languages:
+  - cpp
+  - csharp
+  - java
+  - python
+  - swift
 ---
 
 A location service must know the endpoints of any [object adapter](../../dispatch) whose identifier can be used in an
@@ -14,19 +20,17 @@ The communicator in the client includes the identifier `PublicAdapter` in its
 location service can know these endpoints is if it is given them. When you consider that an object adapter's endpoints
 may not specify fixed ports, and therefore the endpoint addresses may change each time the object adapter is activated,
 it is clear that the best source of endpoint information is the object adapter itself. As a result, an object adapter
-that is [properly configured](../locator-configuration-for-a-server) contacts the locator during activation to supply
-its identifier and current endpoints. More specifically, the object adapter registers itself with an object implementing
-the `Ice::LocatorRegistry` interface, whose proxy the object adapter obtains from the locator.
+that is [properly configured](../locator-configuration-for-a-server) registers its adapter ID, its replica group ID when
+it has one, and its [published endpoints](../../dispatch/object-adapter-endpoints) with the locator registry during
+activation. The locator registry is an `Ice::LocatorRegistry` whose proxy the object adapter obtains by calling
+`getRegistry` on the locator.
 
-A location service may require that all object adapters be pre-registered via some implementation-specific mechanism.
-([IceGrid](../../../services/icegrid) behaves this way by default.) This implies that activation can fail if the object
-adapter supplies an identifier that is unknown to the location service. In such a situation, the object adapter's
-`activate` operation throws `NotRegisteredException`.
+## Registering and Unregistering Endpoints
 
-In a similar manner, an object adapter that participates in a [replica group](../../../basics/terminology) includes the
-group's identifier in the locator request that is sent during activation. If the location service requires replica group
-members to be configured in advance, `activate` throws `NotRegisteredException` if the object adapter's identifier is
-not one of the group's [registered participants](../../../services/icegrid/object-adapter-replication).
+An object adapter registers with the locator registry when it has an adapter ID and a locator, and publishes at least
+one endpoint. It registers the first time you call `activate`; calling `activate` after `hold` does not register it
+again. Calling `setPublishedEndpoints` registers the new endpoints right away, whether or not the object adapter is
+active. Deactivating the object adapter unregisters its endpoints.
 
 ## See Also
 

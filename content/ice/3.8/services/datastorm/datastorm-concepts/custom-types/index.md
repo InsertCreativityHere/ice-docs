@@ -56,17 +56,65 @@ If your types are **not defined in Slice**, you must provide specializations of 
 [DataStorm::Encoder](https://code.zeroc.com/ice/3.8/api/cpp/structDataStorm_1_1Encoder.html) and
 [DataStorm::Decoder](https://code.zeroc.com/ice/3.8/api/cpp/structDataStorm_1_1Decoder.html) templates for those types.
 
+For example, with a message type defined in Protobuf:
+
+```protobuf
+syntax = "proto3";
+
+package vehicle;
+
+message Telemetry {
+  float battery_level = 1;
+  float speed = 2;
+}
+```
+
+the following specializations encode and decode it with the Protobuf library:
+
+```cpp
+namespace DataStorm
+{
+    template<> struct Encoder<vehicle::Telemetry>
+    {
+        static Ice::ByteSeq encode(const vehicle::Telemetry& telemetry)
+        {
+            Ice::ByteSeq bytes(telemetry.ByteSizeLong());
+            telemetry.SerializeToArray(bytes.data(), static_cast<int>(bytes.size()));
+            return bytes;
+        }
+    };
+
+    template<> struct Decoder<vehicle::Telemetry>
+    {
+        static vehicle::Telemetry decode(const Ice::ByteSeq& bytes)
+        {
+            vehicle::Telemetry telemetry;
+            if (!telemetry.ParseFromArray(bytes.data(), static_cast<int>(bytes.size())))
+            {
+                throw invalid_argument{"invalid Telemetry message"};
+            }
+            return telemetry;
+        }
+    };
+}
+
+Topic<string, vehicle::Telemetry> topic{node, "telemetry"};
+```
+
+`encode` and `decode` can also take the node's communicator, a `const Ice::CommunicatorPtr&`, as their first parameter:
+declare it in both functions or in neither.
+
 ## Additional Requirements
 
-For **partial updates**, DataStorm needs to clone values. By default, DataStorm performs cloning using the type’s **copy
-constructor**.
+DataStorm keeps keys, update tags, and filter criteria in ordered maps, so their types must be ordered by `std::less`,
+which uses `operator<` unless you specialize it. A `Value` type must be default-constructible and copyable.
 
-In some cases, using the copy constructor may not be appropriate — for example, when the value is a `std::shared_ptr` or
-another reference type that should not be deep-copied.
-
-The [DataStorm::Cloner](https://code.zeroc.com/ice/3.8/api/cpp/structDataStorm_1_1Cloner.html) template allows
-applications to customize how values are cloned for their own types. You can specialize this template to define a custom
-clone behavior that suits your data types.
+For **partial updates**, an updater modifies a clone of the previous value. This clone must be an independent copy,
+since the previous value may remain in use. DataStorm creates the clone with the
+[DataStorm::Cloner](https://code.zeroc.com/ice/3.8/api/cpp/structDataStorm_1_1Cloner.html) template: by default,
+`Cloner` copies the value with its copy constructor, and for a `std::shared_ptr` to a Slice class, it calls `ice_clone`
+on the object, which makes a shallow copy. If this default does not produce an independent copy of your `Value` type,
+specialize `Cloner` for this type.
 
 ## Stringification
 

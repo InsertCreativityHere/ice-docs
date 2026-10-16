@@ -21,10 +21,10 @@ results. You may receive a user exception only when you make an invocation using
 
 ## Dispatch Exceptions
 
-When a API call throws an exception, this exception is necessarily thrown in the same program and address space as the
-caller. This exception can represent an error that was detected locally by the Ice runtime (for example, failed to
-establish a connection), or it can represent an error that was reported “over the wire” by a remote Ice server (for
-example, could not find a servant to dispatch this request to).
+When an API call throws an exception, this exception is necessarily thrown in the caller's process. This exception can
+represent an error that was detected locally by the Ice runtime (for example, failed to establish a connection), or it
+can represent an error that was reported “over the wire” by a remote Ice server (for example, could not find a servant
+to dispatch this request to).
 
 In the Ice exception type system, all these exceptions are local exceptions, derived from `LocalException`. The
 exceptions that represent errors reported “over the wire” are a special kind of local exceptions, called dispatch
@@ -39,7 +39,7 @@ You can only get a dispatch exception when you make an invocation with a two-way
 
 {% /callout %}
 
-A dispatch information carries information transmitted in a [Reply](../../protocol) message, namely:
+A dispatch exception carries information transmitted in a [Reply](../../protocol) message, namely:
 
 - a [ReplyStatus](api:Ice/ReplyStatus) enumerator
 - one or more fields that depend on the `ReplyStatus` enumerator
@@ -52,10 +52,13 @@ A dispatch information carries information transmitted in a [Reply](../../protoc
 | `UnknownLocalException`                     | `UnknownLocalException`                 | `string message`                                |
 | `UnknownUserException`                      | `UnknownUserException`                  | `string message`                                |
 | `UnknownException`                          | `UnknownException`                      | `string message`                                |
-| `InvalidData`                               |                                         |                                                 |
-| `Unauthorized`                              |                                         |                                                 |
-| Any other value greater than `Unauthorized` |                                         |                                                 |
+| `InvalidData`                               |                                         | `string message`                                |
+| `Unauthorized`                              |                                         | `string message`                                |
+| `NotSupported`                              |                                         | `string message`                                |
+| Any other value greater than `NotSupported` |                                         | `string message`                                |
 
 A dispatch exception without an associated exception class is an instance of
-[DispatchException](api:Ice/DispatchException). The `NotExist` and `Unknown` exceptions all ultimately derive from
-`DispatchException`.
+[DispatchException](api:Ice/DispatchException). The three `NotExist` exceptions derive from `RequestFailedException`,
+and `UnknownLocalException` and `UnknownUserException` derive from `UnknownException`. `RequestFailedException` and
+`UnknownException` derive from `DispatchException`. The `replyStatus` member of a dispatch exception holds its reply
+status.

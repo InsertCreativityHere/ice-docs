@@ -56,27 +56,29 @@ This directive is ignored by other Slice compilers.
 
 ### `deprecated[:message]`
 
-`deprecate[:message]`
-
 This directive allows you to emit a [deprecation warning for Slice constructs](../deprecating-slice-definitions).
 
 ### `format`
 
-This directive defines the [encoding format](../user-defined-types/classes/slicing-values-and-exceptions) used for any
-classes or exceptions marshaled as the arguments or results of an operation. The tag can be applied to an interface,
-which affects all of its operations, or to individual operations. Legal values for the tag are `format:sliced`,
-`format:compact`, and `format:default`. A tag specified for an operation overrides any setting applied to its enclosing
-interface. The [Ice.Default.SlicedFormat](../../property-reference/ice-default-properties) property defines the behavior
-when no tag is present.
+This directive defines the [encoding format](../user-defined-types/classes/slicing-values-and-exceptions) used for class
+instances marshaled as the arguments or result of an operation. Ice always marshals user exceptions in the sliced
+format. You can apply this directive to an interface, which affects all of its operations, or to an operation. Its
+argument is `compact` or `sliced`: `format:compact` selects the compact format, and `format:sliced` selects the sliced
+format. On an operation, the directive overrides the `format` directive of its enclosing interface.
+
+When neither an operation nor its enclosing interface selects a format, the
+[Ice.Default.SlicedFormat](../../property-reference/ice-default-properties) property selects it.
 
 ### `marshaled-result`
 
-This directive applies to operations and changes the return type of mapped skeleton methods in C++, C#, and Java. It has
-no effect on the client-side mapping.
+This directive lets a servant marshal the results of an operation as soon as it computes them, typically while it holds
+the lock that protects the data it returns. The mapped skeleton method returns a “marshaled result” struct or class
+whose constructor marshals the return value and out parameters immediately.
 
-With this directive, the mapped skeleton method returns a “marshaled result” struct or class that marshals the return
-value and out parameters immediately in its constructor. This allows you to perform the marshaling in a thread-safe
-manner, typically while holding a mutex lock.
+You can apply this directive to an operation, or to an interface, where it covers every operation that the interface
+defines. The Slice compiler changes the mapping of an operation only when its return type or one of its out parameters
+is a class, structure, sequence, or dictionary. This directive affects the server-side mapping in C++, C#, and Java, and
+has no effect on the client-side mapping.
 
 For example:
 

@@ -34,9 +34,9 @@ As you can see, the compiler generates a _proxy interface_`SimplePrx`. In genera
 `<interface-name>Prx`. If an interface is nested in a module `M`, the generated interface is part of namespace `M`, so
 the fully-qualified name is `M.<interface-name>Prx`.
 
-In the client's address space, an instance of `SimplePrx` is the local ambassador for a remote instance of an Ice object
-that implements `Simple` and is known as a _proxy instance_. All the details about the server-side object, such as its
-address, what protocol to use, and its object identity are encapsulated in that instance.
+In the client, an instance of `SimplePrx` is the local ambassador for a remote instance of an Ice object that implements
+`Simple` and is known as a _proxy instance_. All the details about the server-side object, such as its address, what
+transport to use, and its object identity are encapsulated in that instance.
 
 ### Creating a Proxy
 
@@ -168,7 +168,7 @@ the correct proxy type as shown above.
 ### Skeleton Classes
 
 On the server side, interfaces map to _skeleton_ classes. A skeleton is a class that has an abstract method for each
-operation on the corresponding interface. For example, consider our Slice definition for the `Node` interface:
+operation on the corresponding interface. For example, consider our Slice definition for the `Greeter` interface:
 
 ```slice
 module VisitorCenter
@@ -266,7 +266,7 @@ public class Chatbot : VisitorCenter.GreeterDisp_
 
 Note that `Chatbot` inherits from `VisitorCenter.GreeterDisp_`, one of the two skeleton classes.
 
-As far as Ice is concerned, the `Chatbot` class must implement only a single method: the abstract method `Name` that it
+As far as Ice is concerned, the `Chatbot` class must implement only a single method: the abstract method `Greet` that it
 inherits from the skeleton class. This makes the servant class a concrete class that you can instantiate. You can add
 other methods and fields as you see fit to support your implementation.
 

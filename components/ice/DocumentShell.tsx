@@ -50,7 +50,7 @@ interface DocumentShellProps {
   pagination: Pagination[];
   edit: EditLinks;
   showAside?: boolean;
-  /** Body layout when the page is not ordinary prose, e.g. "property-list". */
+  /** Body layout when the page is not ordinary prose, e.g. "wide". */
   shape?: string;
 }
 
@@ -80,15 +80,8 @@ export const DocumentShell = ({
   showAside = true,
   shape
 }: DocumentShellProps) => {
-  // On a property page, each h3 is a property's Synopsis or Description label
-  // rather than a section, so the outline lists the properties alone.
   const toc = headings
-    .filter(
-      (h) =>
-        h &&
-        h.id &&
-        (h.level === 2 || (h.level === 3 && shape !== 'property-list'))
-    )
+    .filter((h) => h && h.id && (h.level === 2 || h.level === 3))
     .map((h) => ({
       id: h.id!,
       title: h.title ?? '',
@@ -100,7 +93,7 @@ export const DocumentShell = ({
     : [];
 
   return (
-    <div className="flex shrink flex-row justify-center overflow-y-clip lg:justify-start">
+    <div className="flex shrink flex-row justify-center lg:justify-start">
       <div className="size-full max-w-232 contain-inline-size sm:mx-6 md:mx-10 lg:mx-12">
         {breadcrumbs.length > 0 && (
           <nav
@@ -118,7 +111,7 @@ export const DocumentShell = ({
                   {crumb.href ? (
                     <Link
                       href={crumb.href}
-                      className="font-medium text-link transition-colors hover:text-ink"
+                      className="focus-ring-text font-medium text-link transition-colors hover:text-ink"
                     >
                       {crumb.title}
                     </Link>
@@ -193,7 +186,10 @@ export const DocumentShell = ({
                 page in this section" the same visual weight as the article, which
                 is conspicuous on a short page where the card is most of it. */}
                 {prev ? (
-                  <Link href={prev.href} className="group min-w-0 flex-1">
+                  <Link
+                    href={prev.href}
+                    className="group focus-ring-text min-w-0 flex-1"
+                  >
                     <div className="text-[11px] font-semibold tracking-[0.04em] text-ink-muted uppercase">
                       Previous
                     </div>
@@ -208,7 +204,7 @@ export const DocumentShell = ({
                 {next ? (
                   <Link
                     href={next.href}
-                    className="group min-w-0 flex-1 text-right"
+                    className="group focus-ring-text min-w-0 flex-1 text-right"
                   >
                     <div className="text-[11px] font-semibold tracking-[0.04em] text-ink-muted uppercase">
                       Next
@@ -229,7 +225,7 @@ export const DocumentShell = ({
       {/* A long outline scrolls on its own, so the actions under it stay in
           view. */}
       {showAside && (
-        <aside className="sticky top-20 ml-8 hidden h-[calc(100vh-6.5rem)] w-58 shrink-0 flex-col gap-2 xl:flex">
+        <aside className="sticky top-22 ml-8 hidden h-[calc(100vh-7rem)] w-58 shrink-0 flex-col gap-2 xl:flex">
           <PageOutline
             headings={toc}
             languages={languages}

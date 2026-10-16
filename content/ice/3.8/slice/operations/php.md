@@ -86,13 +86,16 @@ interface ClientToServer
 }
 ```
 
-The Slice compiler generates the following methods for this definition:
+The Ice extension gives a `ClientToServer` proxy the following methods:
 
 ```php
-function op1($i, $f, $b, $s, $context=null);
-function op2($ns, $ss, $st, $context=null);
-function op3($proxy, $context=null);
+function op1($i, $f, $b, $s);
+function op2($ns, $ss, $st);
+function op3($proxy);
 ```
+
+Each method also accepts an optional last argument: an associative array that holds the
+[request context](../../runtime/invocation/request-contexts/explicit-request-contexts) of the invocation.
 
 Given a proxy to a `ClientToServer` object, the client code can pass parameters as in the following example:
 
@@ -118,10 +121,11 @@ $p->op2($ns, $ss, $st);                  // Pass complex variables
 $p->op3($p);                             // Pass proxy
 ```
 
-### Out Parameters
+### Out Parameters and Return Values
 
-Out parameters are passed by reference. Here is the same Slice definition we saw earlier, but this time with all
-parameters being passed in the out direction:
+A method returns the operation's return value, and assigns each out parameter to the variable you pass by reference.
+Here again are the same Slice definitions we saw earlier, but this time with all parameters being passed in the `out`
+direction, and with `op1` returning a value:
 
 ```slice
 struct NumberAndString
@@ -136,7 +140,7 @@ dictionary<long, StringSeq> StringTable;
 
 interface ServerToClient
 {
-    void op1(out int i, out float f, out bool b, out string s);
+    int op1(out float f, out bool b, out string s);
     void op2(out NumberAndString ns,
              out StringSeq ss,
              out StringTable st);
@@ -144,25 +148,24 @@ interface ServerToClient
 }
 ```
 
-The PHP mapping looks the same as it did for the in parameters version:
+The Ice extension gives a `ServerToClient` proxy the following methods:
 
 ```php
-function op1($i, $f, $b, $s, $context=null);
-function op2($ns, $ss, $st, $context=null);
-function op3($proxy, $context=null);
+function op1(&$f, &$b, &$s);
+function op2(&$ns, &$ss, &$st);
+function op3(&$proxy);
 ```
+
+These methods also accept the optional request context argument after the out parameters.
 
 Given a proxy to a `ServerToClient` object, the client code can receive the results as in the following example:
 
 ```php
 $p = ...                 // Get proxy...
-$p->op1($i, $f, $b, $s);
+$i = $p->op1($f, $b, $s);
 $p->op2($ns, $ss, $st);
 $p->op3($stcp);
 ```
-
-Note that it is not necessary to use the reference operator (`&`) before each argument because the Ice runtime forces
-each `out` parameter to have reference semantics.
 
 ### Parameter Type Mismatches
 
@@ -171,18 +174,8 @@ Ice validates the arguments to a proxy invocation at runtime and reports any typ
 
 ### Null Parameters
 
-Some Slice types naturally have "empty" or "not there" semantics. Specifically, sequences, dictionaries, and strings all
-can be `null`, but the corresponding Slice types do not have the concept of a null value. To make life with these types
-easier, whenever you pass `null` as a parameter or return value of type sequence, dictionary, or string, the Ice runtime
-automatically sends an empty sequence, dictionary, or string to the receiver.
-
-This behavior is useful as a convenience feature: especially for deeply-nested data types, members that are sequences,
-dictionaries, or strings automatically arrive as an empty value at the receiving end. This saves you having to
-explicitly initialize, for example, every string element in a large sequence before sending the sequence in order to
-avoid a run-time error. Note that using null parameters in this way does _not_ create null semantics for Slice
-sequences, dictionaries, or strings. As far as the object model is concerned, these do not exist (only _empty_
-sequences, dictionaries, and strings do). For example, it makes no difference to the receiver whether you send a string
-as `null` or as an empty string: either way, the receiver sees an empty string.
+Slice strings, sequences, and dictionaries have no null value. When you pass `null` for one of these types, whether as a
+parameter, a field, or a sequence element, Ice sends an empty string, sequence, or dictionary.
 
 ### Optional Parameters
 

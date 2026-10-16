@@ -80,7 +80,8 @@ precompiled header mechanism.
 
 ### `--include-dir DIR`
 
-Modifies `#include` directives in source files to prepend the path name of each header file with the directory `DIR`.
+Prepends the directory `DIR` to the path in the `#include` directive that the generated source file uses to include its
+own header file.
 
 ## Include Directives
 
@@ -206,8 +207,9 @@ avoid specifying include paths that enable the preprocessor to locate a file in 
 
 ### Source Files
 
-By default, the compiler generates `#include` directives in source files using only the base name of the included file.
-This behavior is usually appropriate when the source file and header file reside in the same directory.
+By default, the generated source file includes its own header file with an `#include` directive that uses only the base
+name of the header file. This behavior is usually appropriate when the source file and header file reside in the same
+directory.
 
 For example, suppose `A.ice` includes `B.ice` from a subdirectory, as shown in the following snippet of `A.ice`:
 
@@ -226,8 +228,10 @@ Upon examination, we see that the source file contains the following `#include` 
 
 ```cpp
 // A.cpp
-#include <B.h>
+#include "A.h"
 ```
+
+The `#include` directive for `B.h` appears in `A.h`, as described in [Header Files](#header-files).
 
 However, suppose that we wish to enforce a particular standard for generated `#include` directives so that they are
 compatible with our C++ compiler's existing include path settings. In this case, we use the `--include-dir` option to
@@ -241,9 +245,64 @@ The source file now contains the following `#include` directive:
 
 ```cpp
 // A.cpp
-#include <src/B.h>
+#include "src/A.h"
 ```
 
-Any leading path in the included file is discarded as usual, and the value of the `--include-dir` option is prepended.
+The directive still omits the directory of the Slice file, `inc`.
+
+## Using Ice with CMake
+
+Ice for C++ ships with a CMake package that defines an imported library target for each Ice library, such as `Ice::Ice`
+and `Ice::IceGrid`, and the `slice2cpp_generate` function, which compiles the Slice files of a target as part of the
+build. For example:
+
+```cmake
+cmake_minimum_required(VERSION 3.21)
+project(greeter CXX)
+
+find_package(Ice REQUIRED CONFIG)
+
+add_executable(client Client.cpp Greeter.ice)
+slice2cpp_generate(client)
+target_link_libraries(client PRIVATE Ice::Ice)
+```
+
+The package requires CMake 3.21 or later. The `CONFIG` keyword makes `find_package` use config mode: it loads the
+package configuration file that Ice for C++ provides, rather than the `FindIce` find module that ships with CMake.
+Config mode is what CMake recommends for a project that provides its own package configuration
+([cmake-packages(7)](https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html)).
+
+If you installed Ice in a directory that CMake does not search by default, such as `/opt/Ice`, add that directory to
+`CMAKE_PREFIX_PATH`. On Windows, Ice for C++ is the `ZeroC.Ice.Cpp` NuGet package: set `Ice_ROOT` to the package's
+directory, such as `packages/ZeroC.Ice.Cpp.3.8.3`.
+
+`slice2cpp_generate(client)`:
+
+- compiles each Slice file in the sources of `client` with `slice2cpp`, and adds the generated header and source files
+  to the target's sources;
+- adds the directory of the generated headers to the target's include directories, so `Client.cpp` can
+  `#include "Greeter.h"`;
+- passes `Ice_SLICE_DIR`, the directory of the Ice Slice files, to `slice2cpp` with `-I`, so
+  `#include <Ice/Identity.ice>` resolves;
+- records the Slice files that each Slice file includes in a dependency file, so the build compiles a Slice file again
+  when it, or a file it includes, changes.
+
+Call `slice2cpp_generate` in the same `CMakeLists.txt` as the `add_executable` or `add_library` call that creates the
+target, after that call lists the target's Slice files.
+
+### `slice2cpp_generate` Arguments
+
+| Argument                                             | Description                                                                                                                   |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `INCLUDE_DIRS <dir>...`                              | Directories to search for included Slice files, passed to `slice2cpp` with `-I`.                                              |
+| `OPTIONS <option>...`                                | Other `slice2cpp` options, such as `-D` or `--header-ext`.                                                                    |
+| `HEADER_OUTPUT_DIR <dir>`                            | The directory for the generated headers, instead of the default under the build directory.                                    |
+| `INCLUDE_DIR <dir>`                                  | The include prefix of the generated headers, passed to `slice2cpp` with `--include-dir`.                                      |
+| `INCLUDE_SCOPE PRIVATE\|PUBLIC`                      | With `PUBLIC`, the targets that link this target also get the directories of the generated headers. The default is `PRIVATE`. |
+| `DEPENDS <dep>...`                                   | Other files whose changes recompile the Slice files.                                                                          |
+| `GENERATED_HEADERS <var>`, `GENERATED_SOURCES <var>` | Variables that receive the paths of the generated headers and sources.                                                        |
+
+The [CMake package README](https://github.com/zeroc-ice/ice/blob/3.8/cpp/cmake/README.md) covers the variables that
+`find_package` sets, copying the Ice DLLs on Windows, the generated file layout, and installing the generated headers.
 
 {% /language-section %}

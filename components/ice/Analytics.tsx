@@ -63,7 +63,7 @@ function ConsentBanner() {
         See our{' '}
         <a
           href="https://zeroc.com/privacy"
-          className="text-link hover:underline"
+          className="focus-ring-text text-link hover:underline"
         >
           Privacy Policy
         </a>
@@ -73,14 +73,15 @@ function ConsentBanner() {
         <button
           type="button"
           onClick={declineAnalytics}
-          className="flex-1 rounded-lg border border-hairline-strong px-3 py-2 text-ink-secondary transition-colors hover:text-ink"
+          className="flex-1 rounded-lg border border-hairline-strong px-3 py-2 text-ink-secondary focus-ring transition-colors hover:text-ink"
         >
           Decline
         </button>
+        {/* Filled in the ring's own colour, so the ring sits outside it. */}
         <button
           type="button"
           onClick={() => setConsent('granted')}
-          className="flex-1 rounded-lg bg-link px-3 py-2 font-medium text-surface transition-colors hover:bg-link-hover"
+          className="flex-1 rounded-lg bg-link px-3 py-2 font-medium text-surface focus-ring transition-colors hover:bg-link-hover focus-visible:outline-offset-2"
         >
           Accept
         </button>
@@ -95,7 +96,7 @@ export function CookieSettingsButton() {
     <button
       type="button"
       onClick={() => setConsent('unset')}
-      className="text-ink-secondary transition-colors hover:text-ink"
+      className="focus-ring-text text-ink-secondary transition-colors hover:text-ink"
     >
       Cookie Settings
     </button>

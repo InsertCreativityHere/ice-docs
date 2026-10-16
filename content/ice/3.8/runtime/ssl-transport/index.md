@@ -1,11 +1,19 @@
 ---
 title: The SSL Transport
+languages:
+  - cpp
+  - csharp
+  - java
+  - matlab
+  - php
+  - python
+  - ruby
+  - swift
 ---
 
 The SSL transport provides support for securing Ice connections using the SSL/TLS protocols. It is a built-in transport
-available with all supported language mappings and platforms.
-
-The only exception is JavaScript which only supports WSS transport, the secure version of the WS (WebSocket) transport.
+available on all supported platforms and in every language mapping except JavaScript, which secures its connections with
+the [WSS transport](../transports).
 
 The SSL transport is built on top of each platform’s native SSL/TLS engine. This ensures interoperability with
 platform-provided features and that any security updates to the SSL/TLS engine also apply to your Ice applications.

@@ -64,11 +64,26 @@ const greeting = await greeter.greet("Alice");  // Get name via RPC
 Ice for JavaScript supports only **asynchronous method invocation (AMI)**. The JavaScript runtime does not provide a
 blocking I/O model in order to keep the event loop responsive.
 
-The arguments passed to the promise resolution depend on the operation signature:
+The value that fulfills the promise depends on the number of results, counting the return value and the out parameters:
 
-- If the operation has a **single return value**, the promise is fulfilled with that value.
-- If the operation has a **return value and/or out parameters**, the promise is fulfilled with an array: the return
-  value (if any) followed by the out parameters.
+- With **no results**, Ice fulfills the promise with `undefined`.
+- With **one result**, either the return value or a single out parameter, Ice fulfills the promise with that value.
+- With **several results**, Ice fulfills the promise with an array: the return value (if any) followed by the out
+  parameters in declaration order.
+
+The mapping uses an array so that you can bind the results with a destructuring assignment. The proxy method declares
+this array as a TypeScript tuple, so each variable gets the type of its result. For example, given the following
+operation:
+
+```slice
+string getTime(out int hour, out int minute);
+```
+
+A client retrieves the three results as follows:
+
+```typescript
+const [time, hour, minute] = await clock.getTime();
+```
 
 ### Exception Handling
 
@@ -148,6 +163,9 @@ The servant implementation can choose how to provide the result:
 - **Return a promise-like object** that will be fulfilled with the result.
 - **Declare the method as async** and use await inside the implementation.
 
+A servant method provides its results by the same rule as the client side, such as `return [time, hour, minute];` for
+the `getTime` operation above.
+
 **Synchronous version:**
 
 ```typescript
@@ -171,7 +189,8 @@ async greet(name: string, current: Ice.Current): Promise<string> {
 
 The parameter passing rules for the JavaScript mapping are very simple: parameters are passed either by value (for
 simple types) or by reference (for complex types). Semantically, the two ways of passing parameters are identical: it is
-guaranteed that the value of a parameter will not be changed by the invocation.
+guaranteed that the value of a parameter will not be changed by the invocation. A `long` parameter also accepts a
+`number`, as described in [Basic Types](../basic-types).
 
 Here is an interface with operations that pass parameters of various types from client to server:
 
@@ -205,7 +224,7 @@ class ClientToServerPrx extends Ice.ObjectPrx {
 ```
 
 ```typescript
-abstract class ClientToServerPrx extends Ice.ObjectPrx {
+class ClientToServerPrx extends Ice.ObjectPrx {
     op1(
         i:number,
         f:number,
@@ -215,12 +234,12 @@ abstract class ClientToServerPrx extends Ice.ObjectPrx {
 
     op2(
         ns:NumberAndString,
-        ss:StringSeq,
-        st:StringTable,
+        ss:string[],
+        st:Map<bigint, string[]>,
         context?:Map<string, string>):Ice.AsyncResult<void>;
 
     op3(
-        proxy:ClientToServerPrx,
+        proxy:ClientToServerPrx | null,
         context?:Map<string, string>):Ice.AsyncResult<void>;
 }
 ```
@@ -252,18 +271,10 @@ await p.op3(p);                               // Pass proxy
 
 ### Null Parameters in JavaScript
 
-Some Slice types naturally have "empty" or "not there" semantics. Specifically, sequences, dictionaries, and strings all
-can be `null`, but the corresponding Slice types do not have the concept of a null value. To make life with these types
-easier, whenever you pass `null` as a parameter or return value of type sequence, dictionary, or string, the Ice run
-time automatically sends an empty sequence, dictionary, or string to the receiver.
-
-This behavior is useful as a convenience feature: especially for deeply-nested data types, members that are sequences,
-dictionaries, or strings automatically arrive as an empty value at the receiving end. This saves you having to
-explicitly initialize, for example, every string element in a large sequence before sending the sequence in order to
-avoid a run-time error. Note that using null parameters in this way does _not_ create null semantics for Slice
-sequences, dictionaries, or strings. As far as the object model is concerned, these do not exist (only _empty_
-sequences, dictionaries, and strings do). For example, whether you send a string as `null` or as an empty string makes
-no difference to the receiver: either way, the receiver sees an empty string.
+Slice strings, sequences, and dictionaries have no null value. When you pass `null` or `undefined` for one of these
+types, whether as a parameter, a return value, a field, or a sequence element, Ice sends an empty string, sequence, or
+dictionary. For an [optional](#optional-parameters-in-javascript) parameter, return value, or field, `null` and
+`undefined` instead leave the value unset.
 
 ### Optional Parameters in JavaScript
 

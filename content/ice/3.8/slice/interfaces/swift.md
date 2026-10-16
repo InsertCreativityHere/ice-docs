@@ -4,8 +4,8 @@
 
 ### Proxy Protocols
 
-On the client side, a Slice interface maps to an empty Swift protocol. A public extension of this protocol provides two
-methods for each Slice operation of your Slice interface.
+On the client side, a Slice interface maps to an empty Swift protocol. A public extension of this protocol provides an
+async method for each Slice operation of your Slice interface.
 
 Consider the following Slice interface:
 
@@ -36,9 +36,9 @@ public extension SimplePrx {
 As you can see, the compiler generates a _proxy protocol_ `SimplePrx`. In general, the generated name is
 `<interface-name>Prx`.
 
-In the client's address space, an instance of `SimplePrx` is the local ambassador for a remote instance of an Ice object
-that implements `Simple` and is known as a proxy instance. All the details about the server-side object, such as its
-address, what protocol to use, and its object identity are encapsulated in that instance.
+In the client, an instance of `SimplePrx` is the local ambassador for a remote instance of an Ice object that implements
+`Simple` and is known as a proxy instance. All the details about the server-side object, such as its address, what
+transport to use, and its object identity are encapsulated in that instance.
 
 ### Creating a Proxy
 
@@ -237,5 +237,9 @@ As far as Ice is concerned, the `MNode` struct must implement only a single meth
 This makes the servant struct a concrete type that can be instantiated. You can add other methods and fields as you see
 fit to support your implementation. For example, in the preceding definition, we added a `name` field and an
 initializer.
+
+A skeleton protocol inherits `Sendable` from `Ice.Dispatcher`, and the object adapter dispatches each request in its own
+task, so several tasks can call the same servant concurrently. A struct servant such as `MNode` satisfies this
+requirement when all its stored properties are `Sendable`. Implement a servant with mutable state as an actor.
 
 {% /language-section %}

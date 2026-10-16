@@ -2,22 +2,18 @@
 
 ## Syslog Logger
 
-You can activate a logger that logs via the Unix `syslog` implementation by setting the
-[Ice.UseSyslog](../../../property-reference/ice-properties) property.
+On Linux and macOS, you can activate a logger that logs via the Unix `syslog` implementation by setting
+[Ice.UseSyslog](../../../property-reference/ice-properties) to 1.
 
 ## Systemd Journal Logger
 
-On Linux, you can activate a logger that logs to the systemd journal by setting the
-[Ice.UseSystemdJournal](../../../property-reference/ice-properties) property.
+On Linux, you can activate a logger that logs to the systemd journal by setting
+[Ice.UseSystemdJournal](../../../property-reference/ice-properties) to 1. This logger is available only when Ice is
+built with systemd support.
 
-## Windows Logger
+## OSLog Logger
 
-On Windows, subclasses of [Ice::Service](../../../background-servers/windows-services) use the Windows application event
-log by default. The event log implementation is available for C++ applications.
-
-## macOS OSLog
-
-On maOS, you can activate a logger that logs using [OSLog](https://developer.apple.com/documentation/os/oslog) by
-setting [Ice.UseOSLog property](../../../property-reference/ice-properties).
+On macOS and iOS, you can activate a logger that logs using [OSLog](https://developer.apple.com/documentation/os/oslog)
+by setting [Ice.UseOSLog](../../../property-reference/ice-properties) to 1.
 
 {% /language-section %}

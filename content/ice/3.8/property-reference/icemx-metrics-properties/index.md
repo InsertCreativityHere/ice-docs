@@ -58,11 +58,13 @@ Regular expressions use .NET's `Regex` syntax and match any substring of the att
 
 ## IceMX.Metrics._view_.Accept._attribute_
 
-### Synopsis {% id="icemx.metrics.view.accept.attribute-synopsis" %}
+{% property-synopsis %}
 
 `IceMX.Metrics.view.Accept.attribute=regexp`
 
-### Description {% id="icemx.metrics.view.accept.attribute-description" %}
+{% /property-synopsis %}
+
+{% property-description %}
 
 Requires `attribute` to match `regexp` when that attribute is available on the instrumented object or operation, subject
 to the other [filter rules](#regular-expression-filters).
@@ -72,46 +74,79 @@ For example, to accept monitoring instrumented objects or operations which are f
 
 - `IceMX.Metrics.MyView.Accept.parent=MyAdapter`
 
+{% /property-description %}
+
 ## IceMX.Metrics._view_.Disabled
 
-### Synopsis {% id="icemx.metrics.view.disabled-synopsis" %}
+{% property-synopsis %}
 
 `IceMX.Metrics.view.Disabled=num`
 
-### Description {% id="icemx.metrics.view.disabled-description" %}
+{% /property-synopsis %}
+
+{% property-description %}
 
 If `num` is set to a value larger than zero, the metrics view or the map is disabled. This property is useful to
 pre-configure a view or map. The view can be disabled initially to not incur overhead and enabled only when needed at
 runtime.
 
+{% /property-description %}
+
 ## IceMX.Metrics._view_.GroupBy
 
-### Synopsis {% id="icemx.metrics.view.groupby-synopsis" %}
+{% property-synopsis %}
 
 `IceMX.Metrics.view.GroupBy=delimited attributes`
 
-### Description {% id="icemx.metrics.view.groupby-description" %}
+{% /property-synopsis %}
 
-This property defines how metrics are grouped and how the ID of each metrics object is created. The default value is
-`id`. The grouping is based on attributes specific to the instrumented object or operation. For example, you can group
-the invocation metrics by operation name or proxy identity. All the invocations with the same operation name or proxy
-identity will record metrics using the same metrics object. You can specify several attributes to group metrics based on
-multiple attributes. You must delimit the attributes with delimiters when specifying the value of the GroupBy property.
-A delimiter is any character which is not an alpha numeric or the dot character. Attributes which can be used to specify
-the value of this property are defined in the relevant section of the Ice documentation. Here are some examples of
-GroupBy properties.
+{% property-description %}
 
-- `IceMX.Metrics.MyView.GroupBy=operation`
-- `IceMX.Metrics.MyView.GroupBy=identity [operation]`
-- `IceMX.Metrics.MyView.GroupBy=remoteHost:remotePort`
+Sets the attributes by which a map groups the instrumented objects it records: all those with the same values for these
+attributes are grouped into one metrics object, whose ID is built from these values. The default value is `id`, which
+groups the instrumented objects that share an ID, such as all the dispatches of one operation on one Ice object.
+
+To group by several attributes, separate them with a space or punctuation (any character other than a letter, a digit or
+a dot). The separators appear in the IDs: for example, `identity [operation]` groups invocations by proxy identity and
+operation name, with IDs such as `hello [sayHello]`, and `remoteHost:remotePort` gives IDs such as `192.168.1.10:4061`.
+
+Each map supports its own set of attributes, listed in
+[Metrics Attributes](../../administration/administrative-facility/metrics-facet#metrics-attributes) for the Ice runtime,
+and in [Glacier2 Metrics](../../services/glacier2/glacier2-metrics) and
+[IceStorm Metrics](../../services/icestorm/icestorm-metrics) for these services. A map records an instrumented object
+only when it can resolve every attribute in `GroupBy`.
+
+A view-level `GroupBy` applies to every map of a view that has no `Map.` properties, so it suits only the attributes
+every map supports: `id`, `parent` and `none`. In a view with `Map.` properties, each map uses its own `GroupBy`. To
+group by an attribute that only some maps support, set `GroupBy` on these maps:
+
+```config
+IceMX.Metrics.ByOperation.Map.Invocation.GroupBy=operation
+IceMX.Metrics.ByOperation.Map.Invocation.Map.Remote.GroupBy=id
+IceMX.Metrics.ByOperation.Map.Invocation.Map.Collocated.GroupBy=id
+
+IceMX.Metrics.ByIdentity.Map.Invocation.GroupBy=identity [operation]
+IceMX.Metrics.ByIdentity.Map.Invocation.Map.Remote.GroupBy=id
+IceMX.Metrics.ByIdentity.Map.Invocation.Map.Collocated.GroupBy=id
+
+IceMX.Metrics.ByPeer.Map.Connection.GroupBy=remoteHost:remotePort
+```
+
+A view with `Map.` properties includes only the maps they name. The `Remote` and `Collocated` sub-maps of the Invocation
+map inherit its `GroupBy` unless they set their own, and they support neither `operation` nor `identity`, so the first
+two views set their `GroupBy` to `id`.
+
+{% /property-description %}
 
 ## IceMX.Metrics._view_.Reject._attribute_
 
-### Synopsis {% id="icemx.metrics.view.reject.attribute-synopsis" %}
+{% property-synopsis %}
 
 `IceMX.Metrics.view.Reject.attribute=regexp`
 
-### Description {% id="icemx.metrics.view.reject.attribute-description" %}
+{% /property-synopsis %}
+
+{% property-description %}
 
 Excludes an instrumented object or operation when `attribute` matches `regexp`. A matching `Reject` rule takes
 precedence over any `Accept` rules; see [Regular Expression Filters](#regular-expression-filters).
@@ -121,16 +156,22 @@ For example, to reject monitoring instrumented objects or operations which are f
 
 - `IceMX.Metrics.MyView.Reject.parent=Ice\.Admin`
 
+{% /property-description %}
+
 ## IceMX.Metrics._view_.RetainDetached
 
-### Synopsis {% id="icemx.metrics.view.retaindetached-synopsis" %}
+{% property-synopsis %}
 
 `IceMX.Metrics.view.RetainDetached=num`
 
-### Description {% id="icemx.metrics.view.retaindetached-description" %}
+{% /property-synopsis %}
+
+{% property-description %}
 
 If `num` is set to a value larger than zero, up to `num` metrics object whose `current` value is 0 will be kept in
 memory by the metrics map. This is useful to prevent indefinite memory growth if the monitoring of an instrumented
 object or operation creates a unique metrics object, only the last `num` metrics object will be kept in memory. The
 default value is `10`, meaning that at most ten metrics object with a `current` value equal to 0 will be retained by the
 metrics map.
+
+{% /property-description %}

@@ -5,11 +5,10 @@ title: Command-Line Parsing and Initialization
 When you [initialize the Ice runtime](../../communicator/initialization-and-destruction) by calling `initialize`, you
 can pass the application's arguments to the initialization call.
 
-In most languages, this argument vector is an _in-out_ parameter. In C++, for example, `argc` is passed as a _reference_
-to an `int`:
+In C++, `initialize` takes the argument vector as an _in-out_ parameter, with `argc` as a _reference_ to an `int`:
 
 ```cpp
-CommunicatorPtr initialize(int& argc, const char* argv[], ...other parameters...);
+auto communicator = Ice::initialize(argc, argv);
 ```
 
 `initialize` parses the argument vector and initializes the new communicator's properties accordingly. It also removes

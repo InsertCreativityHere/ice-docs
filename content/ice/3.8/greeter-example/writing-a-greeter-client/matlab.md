@@ -15,9 +15,10 @@ You can find the complete source code for this example in the
 The first step when writing a MATLAB application with Ice is to compile the Slice definitions for this application with
 the Slice to MATLAB compiler (`slice2matlab`).
 
-For our client application, we call `slice2matlab` on the `Greeter.ice` Slice file we wrote earlier:
+For our client application, we call the Ice toolbox's `slice2matlab` function on the `Greeter.ice` Slice file we wrote
+earlier, from the MATLAB console:
 
-```shell
+```matlab
 slice2matlab Greeter.ice
 ```
 
@@ -62,7 +63,7 @@ connections and performs other important cleanups. We use the `onCleanup` functi
 method:
 
 ```matlab
- cleanup = onCleanup(@() communicator.destroy());
+cleanup = onCleanup(@() communicator.destroy());
 ```
 
 ### 2. Create a Greeter Proxy
@@ -113,12 +114,12 @@ greeting = futureGreeting.fetchOutputs();
 fprintf('%s\n', greeting);
 ```
 
-With the asynchronous version, the method call doesn’t block. Instead, the method returns a future immediately and we
-later poll this future (with `fetchOutputs`) to wait until the result is available.
+With the asynchronous version, the method call doesn’t block. Instead, the method returns a future immediately. We call
+`fetchOutputs` once when we are ready to wait for the result; it blocks until the invocation completes.
 
 Asynchronous invocations are more semantically correct for remote calls, and they alert readers to the potential delays
-inherent to these calls. But they are more complicated to write and are of limited value in MATLAB since we have to poll
-the returned future – MATLAB does not support the more elegant async/await syntax. In practice, making synchronous
+inherent to these calls. But they are more complicated to write and are of limited value in MATLAB since we have to wait
+on the returned future – MATLAB does not support the more elegant async/await syntax. In practice, making synchronous
 invocations is simpler and more common in MATLAB.
 
 ### 4. Cleanup

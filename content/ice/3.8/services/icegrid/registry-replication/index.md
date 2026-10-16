@@ -19,7 +19,7 @@ that can legally appear in an object identity.
 
 The figure below illustrates the underlying concepts of registry replication:
 
-![A client initially contacts the master registry and can fail over to the slave. The registries synchronize, and both nodes communicate with the replicas. Host Server 1 contains the master and Node1; Host Server 2 contains the slave and Node2.](/images/ice/3.8/registry-replication/registry-replication.svg)
+![Host Server 1 runs the master registry and Node1, and host Server 2 runs the slave registry and Node2. In step 1 the registries synchronize, in step 2 both nodes contact the master, in step 3 both nodes contact the slave, in step 4 the client contacts the master, and in step 5 the client fails over to the slave.](/images/ice/3.8/registry-replication/registry-replication.svg)
 
 1. The slave replica contacts the master replica at startup and synchronizes its databases. Any subsequent modifications
    to the deployed applications are made via the master replica, which distributes them to all active slaves.
@@ -64,11 +64,11 @@ A client that needs to allocate a resource must establish a session with the mas
 
 ### Administration
 
-The state of an IceGrid registry is accessible via the `IceGrid::Admin` interface or (more commonly) using an
-[administrative tool](../icegridadmin-command-line-tool) that encapsulates this interface. Modifications to the
-registry's state, such as deploying or updating an application, can only be done using the master replica.
-Administrative access to slave replicas is allowed but restricted to read-only operations. The administrative utilities
-provide mechanisms for you to select a particular replica to contact.
+You administer an IceGrid registry through the `IceGrid::Admin` interface, directly or, more commonly, with an
+[administrative tool](../icegridadmin-command-line-tool) that uses this interface. An administrative client must use the
+master replica to modify the registry's state, for example to deploy or update an application. A slave replica rejects
+these modifications but accepts the other administrative operations, such as starting and stopping servers. The
+administrative utilities provide mechanisms for you to select a particular replica to contact.
 
 For programmatic access to a replica's administrative interface, the `IceGrid/Registry` identity corresponds to the
 master replica and the identity `IceGrid/Registry-name` corresponds to the slave with the given name.
@@ -77,7 +77,7 @@ master replica and the identity `IceGrid/Registry-name` corresponds to the slave
 
 The registry implements the session manager interfaces required for
 [integration with a Glacier2 router](../glacier2-integration-with-icegrid). The master replica supports the object
-identities `IceGrid/SessionManager` and `IceGrid/AdminSessionManager`. The slave replicas offer support for read-only
+identities `IceGrid/SessionManager` and `IceGrid/AdminSessionManager`. The slave replicas offer support for
 administrative sessions using the object identity `IceGrid/AdminSessionManager-name`.
 
 ## Configuring Registry Replication

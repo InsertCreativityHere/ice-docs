@@ -200,7 +200,9 @@ MFile::write(Filesystem::Lines text, const Ice::Current&)
 If you throw an arbitrary C++ exception (such as a `std::logic_error`), the Ice runtime catches the exception and then
 returns an `UnknownException` to the client.
 
-If you throw an Ice runtime exception, such as `MarshalException`, the client receives an `UnknownLocalException`.
+If you throw a [dispatch exception](../../runtime/local-and-dispatch-exceptions#dispatch-exceptions), such as
+`ObjectNotExistException`, the client receives a dispatch exception with the same reply status. If you throw any other
+Ice runtime exception, such as `MarshalException`, the client receives an `UnknownLocalException`.
 
 The server-side Ice runtime does not validate user exceptions thrown by an operation implementation to ensure they are
 compatible with the operation's Slice definition. Rather, Ice returns the user exception to the client, where the
@@ -226,13 +228,15 @@ actual error condition for the exception was encountered during the call to the 
 advantage of this behavior is that all exception handling is located in the same place (instead of being present twice,
 once where you call the `Async` function, and again where you retrieve the result) .
 
-There are two exceptions to this rule:
+There are three exceptions to this rule:
 
 - if you destroy the communicator and then make an asynchronous invocation, the `Async` function throws
   `CommunicatorDestroyedException`. This is necessary because, once the communicator is destroyed, its client thread
   pool is no longer available.
 - a call to an `Async` function can throw `TwowayOnlyException`. An `Async` function throws this exception if you call
-  an operation that has a return value or out-parameters on a oneway proxy.
+  an operation that has a return value, out-parameters, or an exception specification on a oneway proxy.
+- a call to an `Async` function can throw `OnewayOnlyException`. An `Async` function throws this exception if you call
+  an operation with the [oneway](../slice-metadata-directives#oneway) metadata on a twoway proxy.
 
 ### Asynchronous Oneway Invocations
 
@@ -561,6 +565,16 @@ incoming value)?
 For incoming values, the mapped C++ type is always “by value”: Ice transfers these arguments to you, and you get full
 ownership. For outgoing values, Ice only needs to “borrow” the arguments while it marshals them synchronously into the
 payload of the request.
+
+{% callout type="note" %}
+
+A sequence parameter with the `cpp:array` metadata is the exception. In a function that you implement and Ice calls,
+such as a servant function or an AMI response callback, the pair of pointers Ice gives you denotes elements that Ice
+owns, and these pointers remain valid only until your function returns; see
+[Array Mapping for Sequence Parameters](../user-defined-types/sequences#array-mapping-for-sequence-parameters). A
+function you call never returns such a pair.
+
+{% /callout %}
 
 | **Slice Parameter Type**                                            | **Mapped C++ Parameter Type (Outgoing)**                        | **Mapped C++ Parameter Type (Incoming, Always by Value)** |
 | ------------------------------------------------------------------- | --------------------------------------------------------------- | --------------------------------------------------------- |

@@ -10,6 +10,13 @@ Ice/Communicator:
   js: https://code.zeroc.com/ice/3.8/api/javascript/Ice/Communicator.html
   python: https://code.zeroc.com/ice/3.8/api/python/Ice.Communicator.html
   swift: https://code.zeroc.com/ice/3.8/api/swift/documentation/ice/communicator
+Ice/Connection:
+  cpp: https://code.zeroc.com/ice/3.8/api/cpp/classIce_1_1Connection.html
+  csharp: https://code.zeroc.com/ice/3.8/api/csharp/api/Ice.Connection.html
+  java: https://code.zeroc.com/ice/3.8/api/java/com.zeroc.ice/com/zeroc/Ice/Connection.html
+  js: https://code.zeroc.com/ice/3.8/api/javascript/Ice/Connection.html
+  python: https://code.zeroc.com/ice/3.8/api/python/Ice.Connection.html
+  swift: https://code.zeroc.com/ice/3.8/api/swift/documentation/ice/connection
 Ice/Current:
   cpp: https://code.zeroc.com/ice/3.8/api/cpp/structIce_1_1Current.html
   csharp: https://code.zeroc.com/ice/3.8/api/csharp/api/Ice.Current.html
@@ -37,6 +44,16 @@ Ice/InitializationData:
   python: https://code.zeroc.com/ice/3.8/api/python/Ice.InitializationData.html
   ruby: https://code.zeroc.com/ice/3.8/api/ruby/Ice/InitializationData.html
   swift: https://code.zeroc.com/ice/3.8/api/swift/documentation/ice/initializationdata
+Ice/InputStream:
+  cpp: https://code.zeroc.com/ice/3.8/api/cpp/classIce_1_1InputStream.html
+  csharp: https://code.zeroc.com/ice/3.8/api/csharp/api/Ice.InputStream.html
+  java: https://code.zeroc.com/ice/3.8/api/java/com.zeroc.ice/com/zeroc/Ice/InputStream.html
+  js: https://code.zeroc.com/ice/3.8/api/javascript/Ice/InputStream.html
+  swift: https://code.zeroc.com/ice/3.8/api/swift/documentation/ice/inputstream
+Ice/Instrumentation/CommunicatorObserver:
+  cpp: https://code.zeroc.com/ice/3.8/api/cpp/classIce_1_1Instrumentation_1_1CommunicatorObserver.html
+  csharp: https://code.zeroc.com/ice/3.8/api/csharp/api/Ice.Instrumentation.CommunicatorObserver.html
+  java: https://code.zeroc.com/ice/3.8/api/java/com.zeroc.ice/com/zeroc/Ice/Instrumentation/CommunicatorObserver.html
 Ice/LocalException:
   cpp: https://code.zeroc.com/ice/3.8/api/cpp/classIce_1_1LocalException.html
   csharp: https://code.zeroc.com/ice/3.8/api/csharp/api/Ice.LocalException.html
@@ -63,6 +80,12 @@ Ice/ObjectPrx:
   python: https://code.zeroc.com/ice/3.8/api/python/Ice.ObjectPrx.html
   ruby: https://code.zeroc.com/ice/3.8/api/ruby/Ice/ObjectPrx.html
   swift: https://code.zeroc.com/ice/3.8/api/swift/documentation/ice/objectprx
+Ice/OutputStream:
+  cpp: https://code.zeroc.com/ice/3.8/api/cpp/classIce_1_1OutputStream.html
+  csharp: https://code.zeroc.com/ice/3.8/api/csharp/api/Ice.OutputStream.html
+  java: https://code.zeroc.com/ice/3.8/api/java/com.zeroc.ice/com/zeroc/Ice/OutputStream.html
+  js: https://code.zeroc.com/ice/3.8/api/javascript/Ice/OutputStream.html
+  swift: https://code.zeroc.com/ice/3.8/api/swift/documentation/ice/outputstream
 Ice/Properties:
   cpp: https://code.zeroc.com/ice/3.8/api/cpp/classIce_1_1Properties.html
   csharp: https://code.zeroc.com/ice/3.8/api/csharp/api/Ice.Properties.html

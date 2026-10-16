@@ -148,7 +148,7 @@ export function SideNav({
         // stretches to the row, capped at the viewport. The scrollbar's space
         // stays reserved while the tree fits, so the labels don't rewrap when
         // opening a group makes the rail scroll.
-        className="sticky top-20 hidden max-h-[calc(100vh-6.5rem)] w-66 shrink-0 scrollbar-gutter-stable overflow-y-auto overscroll-contain pr-3 pb-8 text-sm contain-size lg:block"
+        className="sticky top-22 hidden max-h-[calc(100vh-7rem)] w-66 shrink-0 scrollbar-gutter-stable overflow-y-auto overscroll-contain pr-3 pb-8 text-sm contain-size lg:block"
       >
         {tree}
       </nav>
@@ -218,7 +218,7 @@ function Drawer({ children }: { children: React.ReactNode }) {
               dialogRef.current!.showModal();
               setExpanded(true);
             }}
-            className="-ml-2 rounded-md p-2 text-ink transition-colors hover:bg-surface-subtle lg:hidden"
+            className="-ml-1.5 flex size-8 items-center justify-center rounded-md text-ink focus-ring transition-colors hover:bg-surface-subtle lg:hidden"
           >
             <Menu className="size-5" aria-hidden="true" />
             <span className="sr-only">Table of contents</span>
@@ -251,7 +251,7 @@ function Drawer({ children }: { children: React.ReactNode }) {
             <button
               type="button"
               onClick={() => dialogRef.current!.close()}
-              className="rounded-md p-2 text-ink transition-colors hover:bg-surface-subtle"
+              className="flex size-8 items-center justify-center rounded-md text-ink focus-ring transition-colors hover:bg-surface-subtle"
             >
               <X className="size-5" aria-hidden="true" />
               <span className="sr-only">Close</span>
@@ -317,7 +317,7 @@ function Tree({
         );
 
         const label = clsx(
-          'block flex-1 rounded-[5px] px-2 py-1.5 text-left leading-snug transition-colors',
+          'block flex-1 rounded-md px-2 py-1.5 text-left leading-snug transition-colors focus-ring',
           active
             ? 'text-link'
             : onActiveTrail
@@ -345,7 +345,7 @@ function Tree({
                   type="button"
                   onClick={() => toggle(k)}
                   aria-expanded={isOpen}
-                  className="flex flex-1 items-start text-left"
+                  className="flex flex-1 items-start rounded-md text-left focus-ring"
                 >
                   <span className="mt-1.5 flex h-5 w-5 shrink-0 items-center justify-center text-ink-muted">
                     {chevron}
@@ -355,13 +355,13 @@ function Tree({
               ) : (
                 <>
                   <span className="w-5 shrink-0" />
-                  <Link
+                  <RailLink
                     href={node.href!}
                     aria-current={active ? 'page' : undefined}
                     className={label}
                   >
                     {node.title}
-                  </Link>
+                  </RailLink>
                 </>
               )}
             </div>
@@ -397,5 +397,34 @@ function Tree({
         );
       })}
     </ul>
+  );
+}
+
+// The rail lists every page of the version, so prefetching the entries on
+// screen, as a link does by default, would fetch dozens of pages on every load,
+// nearly all unread. A pointer over an entry is the intent worth acting on, so
+// the page is fetched then, and is there by the click: Next's hover-triggered
+// prefetch, where `null` turns the default back on once the pointer arrives.
+// https://nextjs.org/docs/app/guides/prefetching#hover-triggered-prefetch
+function RailLink({
+  href,
+  children,
+  ...props
+}: {
+  href: string;
+  'aria-current'?: 'page';
+  className: string;
+  children: React.ReactNode;
+}) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <Link
+      href={href}
+      prefetch={hovered ? null : false}
+      onPointerEnter={() => setHovered(true)}
+      {...props}
+    >
+      {children}
+    </Link>
   );
 }

@@ -59,6 +59,13 @@ the conventions that recur in review.
 - Comments explain what the code cannot say for itself. Do not add a comment that narrates the markup or restates the
   class names on the line below it.
 
+## Keyboard and screen readers
+
+- A control carries `focus-ring`, a bare text link `focus-ring-text`; see `app/globals.css`. A menu item highlights by
+  background instead, and a scroll target draws no ring.
+- A control has a name and a state: an `aria-label` or `sr-only` text where it shows no text, and `aria-expanded` or
+  `aria-pressed` where it toggles.
+
 <!-- prettier-ignore-start -->
 
 <!-- BEGIN:nextjs-agent-rules -->

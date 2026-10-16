@@ -116,8 +116,7 @@ a class type: optional and class are incompatible.
 
 {% /callout %}
 
-Optional fields and required fields can appear in any order in your class definition. You can also assign tags in any
-order.
+You can assign tags in any order.
 
 An operation's signature can include any combination of required and optional parameters, but output parameters still
 must follow input parameters:
@@ -132,6 +131,9 @@ bool example(
 
 Language mappings specify an API for passing optional parameters and testing whether a parameter is present.
 
+Optional parameters require [Ice encoding version 1.1](../../encoding/data-encoding-for-optional-values): when Ice
+marshals a request or a reply with encoding 1.0, it omits the optional parameters, and the receiver sees them unset.
+
 ## Overloading Operations
 
 Slice does not support any form of overloading of operations. For example:
@@ -143,20 +145,14 @@ interface CircadianRhythm
 
     void modify(    TimeOfDay startTime,        // Error
                     TimeOfDay endTime,
-                out timeOfDay prevStartTime,
+                out TimeOfDay prevStartTime,
                 out TimeOfDay prevEndTime);
 }
 ```
 
 Operations in the same interface must have different names, regardless of what type and number of parameters they have.
-This restriction exists because overloaded functions cannot sensibly be mapped to languages without built-in support for
-overloading.
-
-{% callout type="note" %}
-
-Name mangling is not an option in this case: while it works fine for compilers, it is unacceptable to humans.
-
-{% /callout %}
+A request identifies the operation it invokes by name only, and many of the languages Ice maps to, such as Python,
+JavaScript, and Ruby, do not support overloading.
 
 ## Idempotent Operations
 
