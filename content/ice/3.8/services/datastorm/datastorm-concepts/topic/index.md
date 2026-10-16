@@ -47,6 +47,14 @@ identifies the [writer](../writer) that published it.
 The applications that share a topic name must all create this topic with the same `Key`, `Value` and `UpdateTag` type
 parameters: DataStorm does not check these types across applications.
 
+## Waiting for Readers and Writers
+
+A topic lets you check whether readers are attached to its writers and wait until they are, or until none is, with
+`hasReaders`, `waitForReaders` and `waitForNoReaders`; `hasWriters`, `waitForWriters` and `waitForNoWriters` do the same
+for the writers attached to its readers. The
+[DataStorm::Topic](https://code.zeroc.com/ice/3.8/api/cpp/classDataStorm_1_1Topic.html) API reference describes these
+methods.
+
 ## Filters
 
 DataStorm topics support two types of filters:
@@ -254,3 +262,17 @@ topic.setUpdater<RideShare::Status>(
 
 With this setup, vehicles can send partial updates to modify **battery level**, **coordinates**, **speed**, or
 **status** independently — or send a full **update sample** when multiple fields change at once.
+
+When a topic has no updater for the tag of a partial update, the reader or writer that has a value for the key leaves
+this value unchanged: the sample carries the key's previous value.
+
+#### Sample Filters and Partial Updates
+
+A writer applies a reader's [sample filter](#sample-filters) to its own samples and sends only those the filter accepts.
+The reader applies each partial update it receives to its own current value for the key, not to the value the writer
+updated:
+
+- When the reader has no value for the key, it discards the partial updates it receives for this key until it receives a
+  full value. When a reader attaches and the first sample the writer sends it for a key is a partial update, the writer
+  sends this sample with a full value.
+- When the filter rejected samples that changed the key's value, the reader's value diverges from the writer's.

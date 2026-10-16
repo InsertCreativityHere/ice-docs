@@ -56,6 +56,54 @@ If your types are **not defined in Slice**, you must provide specializations of 
 [DataStorm::Encoder](https://code.zeroc.com/ice/3.8/api/cpp/structDataStorm_1_1Encoder.html) and
 [DataStorm::Decoder](https://code.zeroc.com/ice/3.8/api/cpp/structDataStorm_1_1Decoder.html) templates for those types.
 
+For example, with a message type defined in Protobuf:
+
+```protobuf
+syntax = "proto3";
+
+package vehicle;
+
+message Telemetry {
+  float battery_level = 1;
+  float speed = 2;
+}
+```
+
+the following specializations encode and decode it with the Protobuf library:
+
+```cpp
+namespace DataStorm
+{
+    template<> struct Encoder<vehicle::Telemetry>
+    {
+        static Ice::ByteSeq encode(const vehicle::Telemetry& telemetry)
+        {
+            Ice::ByteSeq bytes(telemetry.ByteSizeLong());
+            telemetry.SerializeToArray(bytes.data(), static_cast<int>(bytes.size()));
+            return bytes;
+        }
+    };
+
+    template<> struct Decoder<vehicle::Telemetry>
+    {
+        static vehicle::Telemetry decode(const Ice::ByteSeq& bytes)
+        {
+            vehicle::Telemetry telemetry;
+            if (!telemetry.ParseFromArray(bytes.data(), static_cast<int>(bytes.size())))
+            {
+                throw invalid_argument{"invalid Telemetry message"};
+            }
+            return telemetry;
+        }
+    };
+}
+
+Topic<string, vehicle::Telemetry> topic{node, "telemetry"};
+```
+
+`encode` and `decode` can also take the node's communicator, a `const Ice::CommunicatorPtr&`, as their first parameter:
+declare it in both functions or in neither.
+
 ## Additional Requirements
 
 DataStorm keeps keys, update tags, and filter criteria in ordered maps, so their types must be ordered by `std::less`,
