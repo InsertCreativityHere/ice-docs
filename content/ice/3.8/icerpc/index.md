@@ -44,7 +44,7 @@ Ice and IceRPC concepts aren’t an exact match.
 | Servant           | Service                                  |
 | Dispatcher        | Dispatcher                               |
 | Middleware        | Middleware                               |
-| Locator           | (none)                                   |
+| Locator           | Locator interceptor (client side)        |
 | Router            | (none)                                   |
 | Properties        | (none)                                   |
 
@@ -53,6 +53,10 @@ Ice and IceRPC concepts aren’t an exact match.
 IceRPC implements two RPC protocols: `ice` and `icerpc`. The `ice` protocol is IceRPC’s implementation of the
 [Ice Protocol](../basics/protocol-in-a-nutshell), the only RPC protocol Ice implements. Your IceRPC components must use
 the `ice` protocol to communicate with Ice components.
+
+IceRPC supports only encoding 1.1, the default
+[Ice.Default.EncodingVersion](../property-reference/ice-default-properties#ice.default.encodingversion). Make sure your
+Ice configuration doesn't set this property to `1.0`.
 
 Ice and IceRPC have two transports in common: `tcp` and `ssl`. You can’t use `udp` or `bt` (since they are not supported
 by IceRPC), and you can’t use `quic` (since it’s not supported by Ice).
@@ -69,7 +73,8 @@ communicates with IceRPC components must therefore not use batch proxies or enab
 
 ## Using Ice Files with IceRPC
 
-Ice’s Slice compiler for C# (`slice2cs`) generates code for IceRPC when you specify the `--icerpc` option.
+Ice’s Slice compiler for C# (`slice2cs`) generates code for IceRPC when you specify the `--icerpc` option. The generated
+code is compatible with IceRPC C# 0.6.
 
 More commonly, you’ll take advantage of the `ZeroC.Ice.Slice.Tools` MSBuild integration and set `IceRpc` to `true` in
 your project file:
@@ -98,8 +103,9 @@ concerned, publishers and subscribers are just regular clients and servers.
 IceRPC provides client-side support for Locators and indirectly IceGrid: an IceRPC application can find objects in
 IceGrid-managed servers and send requests to these objects.
 
-However, you cannot implement or reimplement an IceGrid-managed server with IceRPC. IceGrid-managed servers rely heavily
-on Ice configuration files and IceRPC doesn’t support Ice configuration or Ice properties.
+IceRPC doesn't provide server-side IceGrid integration. An IceGrid node configures the servers it starts through Ice
+configuration files, which IceRPC doesn't read, and the registration of a server's endpoints and Process object with the
+registry, which the Ice runtime performs from this configuration, is not built into IceRPC.
 
 ### Glacier2
 
@@ -108,10 +114,12 @@ by Glacier2.
 
 ### Discovery
 
-The discovery plug-ins provided by Ice ([IceDiscovery](../plugins/icediscovery) and
-[IceLocatorDiscovery](../plugins/icelocatordiscovery)) rely on UDP multicast and IceRPC doesn’t provide any support for
-UDP. As a result, you can’t discover an IceRPC server using `IceDiscovery`, and an IceRPC client can’t discover an Ice
-server that uses `IceDiscovery`.
+The discovery plug-ins provided by Ice rely on UDP multicast, which IceRPC doesn't support.
+[IceDiscovery](../plugins/icediscovery) lets a client discover objects and object adapters through multicast lookups
+that the servers answer: an IceRPC client can't send these lookups and an IceRPC server can't answer them, so
+`IceDiscovery` works only between Ice components. [IceLocatorDiscovery](../plugins/icelocatordiscovery) lets a client
+discover an IceGrid registry the same way: an IceRPC client can't, so you configure the registry's address in its
+locator interceptor.
 
 ## See Also
 
